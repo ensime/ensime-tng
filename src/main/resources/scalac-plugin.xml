@@ -1,0 +1,4 @@
+<plugin>
+  <name>ensime</name>
+  <classname>ensime.Plugin</classname>
+</plugin>

@@ -1,0 +1,462 @@
+> src/main/scala/simple.scala type src/main/scala.interactive/simple1.scala 38
+String.type
+=========
+> src/main/scala/simple.scala symbol src/main/scala.interactive/simple1.scala 38
+java.lang.String
+=========
+> src/main/scala/simple.scala type src/main/scala.interactive/simple1.scala 51
+simple.Main.type
+=========
+> src/main/scala/simple.scala symbol src/main/scala.interactive/simple1.scala 51
+simple.Main
+=========
+> src/main/scala/simple.scala symbol src/main/scala/simple.scala 302
+scala.annotation.tailrec
+=========
+> src/main/scala/simple.scala symbol src/main/scala/simple.scala 388
+scala.Array.apply
+=========
+> src/main/scala/simple.scala symbol src/main/scala/simple.scala 421
+java.lang.String
+=========
+> src/main/scala/simple.scala complete src/main/scala.interactive/simple1.scala 107
+++:[B >: String, That](that: TraversableOnce[B])(implicit bf: CanBuildFrom[Array[String],B,That])That
+++:[B >: String, That](that: TraversableOnce[B])(implicit bf: CanBuildFrom[WrappedArray[String],B,That])That
+++:[B >: String, That](that: Traversable[B])(implicit bf: CanBuildFrom[Array[String],B,That])That
+++:[B >: String, That](that: Traversable[B])(implicit bf: CanBuildFrom[WrappedArray[String],B,That])That
+++[B >: String, That](that: GenTraversableOnce[B])(implicit bf: CanBuildFrom[Array[String],B,That])That
+++[B >: String, That](that: GenTraversableOnce[B])(implicit bf: CanBuildFrom[WrappedArray[String],B,That])That
++:[B >: String, That](elem: B)(implicit bf: CanBuildFrom[Array[String],B,That])That
++:[B >: String, That](elem: B)(implicit bf: CanBuildFrom[WrappedArray[String],B,That])That
++:[B >: String](elem: B)(implicit _: ClassTag[B])Array[B]
+/:[B](z: B)(op: (B, String) => B)B
+:+[B >: String, That](elem: B)(implicit bf: CanBuildFrom[Array[String],B,That])That
+:+[B >: String, That](elem: B)(implicit bf: CanBuildFrom[WrappedArray[String],B,That])That
+:+[B >: String](elem: B)(implicit _: ClassTag[B])Array[B]
+:\[B](z: B)(op: (String, B) => B)B
+addString(b: StringBuilder)StringBuilder
+addString(b: StringBuilder, sep: String)StringBuilder
+addString(b: StringBuilder, start: String, sep: String, end: String)StringBuilder
+aggregate[B](z: => B)(seqop: (B, String) => B, combop: (B, B) => B)B
+andThen[C](k: String => C)PartialFunction[Int,C]
+apply(i: Int)String
+applyOrElse[A1 <: Int, B1 >: String](x: A1, default: A1 => B1)B1
+array: => Array[String]
+canEqual(that: Any)Boolean
+clone: ()Array[String]
+collect[B, That](pf: PartialFunction[String,B])(implicit bf: CanBuildFrom[Array[String],B,That])That
+collect[B, That](pf: PartialFunction[String,B])(implicit bf: CanBuildFrom[WrappedArray[String],B,That])That
+collectFirst[B](pf: PartialFunction[String,B])Option[B]
+combinations(n: Int)Iterator[Array[String]]
+companion: => GenericCompanion[IndexedSeq]
+compose[A](g: A => Int)A => String
+contains[A1 >: String](elem: A1)Boolean
+containsSlice[B](that: GenSeq[B])Boolean
+copyToArray[B >: String](xs: Array[B])Unit
+copyToArray[B >: String](xs: Array[B], start: Int)Unit
+copyToArray[U >: String](xs: Array[U], start: Int, len: Int)Unit
+copyToBuffer[B >: String](dest: Buffer[B])Unit
+corresponds[B](that: GenSeq[B])(p: (String, B) => Boolean)Boolean
+count(p: String => Boolean)Int
+deep: => IndexedSeq[Any]
+diff[B >: String](that: GenSeq[B])Array[String]
+distinct: => Array[String]
+drop(n: Int)Array[String]
+dropRight(n: Int)Array[String]
+dropWhile(p: String => Boolean)Array[String]
+elemTag: => ClassTag[String]
+endsWith[B](that: GenSeq[B])Boolean
+exists(p: String => Boolean)Boolean
+filter(p: String => Boolean)Array[String]
+filterNot(p: String => Boolean)Array[String]
+find(p: String => Boolean)Option[String]
+flatMap[B, That](f: String => GenTraversableOnce[B])(implicit bf: CanBuildFrom[Array[String],B,That])That
+flatMap[B, That](f: String => GenTraversableOnce[B])(implicit bf: CanBuildFrom[WrappedArray[String],B,That])That
+flatten[B](implicit asTraversable: String => GenTraversableOnce[B])IndexedSeq[B]
+flatten[U](implicit asTrav: String => Traversable[U], implicit m: ClassTag[U])Array[U]
+fold[A1 >: String](z: A1)(op: (A1, A1) => A1)A1
+foldLeft[B](z: B)(op: (B, String) => B)B
+foldRight[B](z: B)(op: (String, B) => B)B
+forall(p: String => Boolean)Boolean
+foreach[U](f: String => U)Unit
+formatted(fmtstr: String)String
+genericBuilder: [B]=> Builder[B,IndexedSeq[B]]
+groupBy[K](f: String => K)Map[K,Array[String]]
+grouped(size: Int)Iterator[Array[String]]
+hasDefiniteSize: => Boolean
+hashCode: ()Int
+head: => String
+headOption: => Option[String]
+indexOf[B >: String](elem: B)Int
+indexOf[B >: String](elem: B, from: Int)Int
+indexOfSlice[B >: String](that: GenSeq[B])Int
+indexOfSlice[B >: String](that: GenSeq[B], from: Int)Int
+indexWhere(p: String => Boolean)Int
+indexWhere(p: String => Boolean, from: Int)Int
+indices: => Range
+init: => Array[String]
+inits: => Iterator[Array[String]]
+intersect[B >: String](that: GenSeq[B])Array[String]
+isDefinedAt(idx: Int)Boolean
+isEmpty: => Boolean
+isTraversableAgain: => Boolean
+iterator: => Iterator[String]
+last: => String
+lastIndexOf[B >: String](elem: B)Int
+lastIndexOf[B >: String](elem: B, end: Int)Int
+lastIndexOfSlice[B >: String](that: GenSeq[B])Int
+lastIndexOfSlice[B >: String](that: GenSeq[B], end: Int)Int
+lastIndexWhere(p: String => Boolean)Int
+lastIndexWhere(p: String => Boolean, end: Int)Int
+lastOption: => Option[String]
+length: => Int
+lengthCompare(len: Int)Int
+lift: => Int => Option[String]
+map[B, That](f: String => B)(implicit bf: CanBuildFrom[Array[String],B,That])That
+map[B, That](f: String => B)(implicit bf: CanBuildFrom[WrappedArray[String],B,That])That
+max[B >: String](implicit cmp: Ordering[B])String
+maxBy[B](f: String => B)(implicit cmp: Ordering[B])String
+min[B >: String](implicit cmp: Ordering[B])String
+minBy[B](f: String => B)(implicit cmp: Ordering[B])String
+mkString(sep: String)String
+mkString(start: String, sep: String, end: String)String
+mkString: => String
+nonEmpty: => Boolean
+orElse[A1 <: Int, B1 >: String](that: PartialFunction[A1,B1])PartialFunction[A1,B1]
+padTo[B >: String, That](len: Int, elem: B)(implicit bf: CanBuildFrom[Array[String],B,That])That
+padTo[B >: String, That](len: Int, elem: B)(implicit bf: CanBuildFrom[WrappedArray[String],B,That])That
+par: => ParArray[String]
+partition(p: String => Boolean)(Array[String], Array[String])
+patch[B >: String, That](from: Int, patch: GenSeq[B], replaced: Int)(implicit bf: CanBuildFrom[Array[String],B,That])That
+patch[B >: String, That](from: Int, patch: GenSeq[B], replaced: Int)(implicit bf: CanBuildFrom[WrappedArray[String],B,That])That
+permutations: => Iterator[Array[String]]
+prefixLength(p: String => Boolean)Int
+product[B >: String](implicit num: Numeric[B])B
+reduce[A1 >: String](op: (A1, A1) => A1)A1
+reduceLeft[B >: String](op: (B, String) => B)B
+reduceLeftOption[B >: String](op: (B, String) => B)Option[B]
+reduceOption[A1 >: String](op: (A1, A1) => A1)Option[A1]
+reduceRight[B >: String](op: (String, B) => B)B
+reduceRightOption[B >: String](op: (String, B) => B)Option[B]
+repr: => Array[String]
+reverse: => Array[String]
+reverseIterator: => Iterator[String]
+reverseMap[B, That](f: String => B)(implicit bf: CanBuildFrom[Array[String],B,That])That
+reverseMap[B, That](f: String => B)(implicit bf: CanBuildFrom[WrappedArray[String],B,That])That
+runWith[U](action: String => U)Int => Boolean
+sameElements[B >: String](that: GenIterable[B])Boolean
+scan[B >: String, That](z: B)(op: (B, B) => B)(implicit cbf: CanBuildFrom[Array[String],B,That])That
+scan[B >: String, That](z: B)(op: (B, B) => B)(implicit cbf: CanBuildFrom[WrappedArray[String],B,That])That
+scanLeft[B, That](z: B)(op: (B, String) => B)(implicit bf: CanBuildFrom[Array[String],B,That])That
+scanLeft[B, That](z: B)(op: (B, String) => B)(implicit bf: CanBuildFrom[WrappedArray[String],B,That])That
+scanRight[B, That](z: B)(op: (String, B) => B)(implicit bf: CanBuildFrom[Array[String],B,That])That
+scanRight[B, That](z: B)(op: (String, B) => B)(implicit bf: CanBuildFrom[WrappedArray[String],B,That])That
+segmentLength(p: String => Boolean, from: Int)Int
+seq: => IndexedSeq[String]
+size: => Int
+slice(from: Int, until: Int)Array[String]
+sliding(size: Int)Iterator[Array[String]]
+sliding(size: Int, step: Int)Iterator[Array[String]]
+sortBy[B](f: String => B)(implicit ord: Ordering[B])Array[String]
+sorted[B >: String](implicit ord: Ordering[B])Array[String]
+sortWith(lt: (String, String) => Boolean)Array[String]
+span(p: String => Boolean)(Array[String], Array[String])
+splitAt(n: Int)(Array[String], Array[String])
+startsWith[B](that: GenSeq[B])Boolean
+startsWith[B](that: GenSeq[B], offset: Int)Boolean
+stringPrefix: => String
+sum[B >: String](implicit num: Numeric[B])B
+tail: => Array[String]
+tails: => Iterator[Array[String]]
+take(n: Int)Array[String]
+takeRight(n: Int)Array[String]
+takeWhile(p: String => Boolean)Array[String]
+to[Col[_]](implicit cbf: CanBuildFrom[Nothing,String,Col[String]])Col[String]
+toArray[U >: String](implicit _: ClassTag[U])Array[U]
+toBuffer[A1 >: String]=> Buffer[A1]
+toIndexedSeq: => IndexedSeq[String]
+toIterable: => Iterable[String]
+toIterator: => Iterator[String]
+toList: => List[String]
+toMap[T, U](implicit ev: <:<[String,(T, U)])Map[T,U]
+toSeq: => Seq[String]
+toSet[B >: String]=> Set[B]
+toStream: => Stream[String]
+toString: ()String
+toTraversable: => Traversable[String]
+toVector: => Vector[String]
+transform(f: String => String)WrappedArray[String]
+transpose[B](implicit asTraversable: String => GenTraversableOnce[B])IndexedSeq[IndexedSeq[B]]
+transpose[U](implicit asArray: String => Array[U])Array[Array[U]]
+union[B >: String, That](that: GenSeq[B])(implicit bf: CanBuildFrom[Array[String],B,That])That
+union[B >: String, That](that: GenSeq[B])(implicit bf: CanBuildFrom[WrappedArray[String],B,That])That
+unzip3[A1, A2, A3](implicit asTriple: String => (A1, A2, A3))(IndexedSeq[A1], IndexedSeq[A2], IndexedSeq[A3])
+unzip3[T1, T2, T3](implicit asTriple: String => (T1, T2, T3), implicit ct1: ClassTag[T1], implicit ct2: ClassTag[T2], implicit ct3: ClassTag[T3])(Array[T1], Array[T2], Array[T3])
+unzip[A1, A2](implicit asPair: String => (A1, A2))(IndexedSeq[A1], IndexedSeq[A2])
+unzip[T1, T2](implicit asPair: String => (T1, T2), implicit ct1: ClassTag[T1], implicit ct2: ClassTag[T2])(Array[T1], Array[T2])
+update(i: Int, x: String)Unit
+updated[B >: String, That](index: Int, elem: B)(implicit bf: CanBuildFrom[Array[String],B,That])That
+updated[B >: String, That](index: Int, elem: B)(implicit bf: CanBuildFrom[WrappedArray[String],B,That])That
+view(from: Int, until: Int)IndexedSeqView[String,Array[String]]
+view: => IndexedSeqView[String,Array[String]]
+withFilter(p: String => Boolean)FilterMonadic[String,Array[String]]
+zip[A1 >: String, B, That](that: GenIterable[B])(implicit bf: CanBuildFrom[Array[String],(A1, B),That])That
+zip[A1 >: String, B, That](that: GenIterable[B])(implicit bf: CanBuildFrom[WrappedArray[String],(A1, B),That])That
+zipAll[B, A1 >: String, That](that: GenIterable[B], thisElem: A1, thatElem: B)(implicit bf: CanBuildFrom[Array[String],(A1, B),That])That
+zipAll[B, A1 >: String, That](that: GenIterable[B], thisElem: A1, thatElem: B)(implicit bf: CanBuildFrom[WrappedArray[String],(A1, B),That])That
+zipWithIndex[A1 >: String, That](implicit bf: CanBuildFrom[Array[String],(A1, Int),That])That
+zipWithIndex[A1 >: String, That](implicit bf: CanBuildFrom[WrappedArray[String],(A1, Int),That])That
+=========
+> src/main/scala/simple.scala complete src/main/scala.interactive/simple1.scala 33
+AbstractMethodError: AbstractMethodError.type
+annotation: annotation.type
+Appendable: Appendable.type
+ArithmeticException: ArithmeticException.type
+ArrayIndexOutOfBoundsException: ArrayIndexOutOfBoundsException.type
+ArrayStoreException: ArrayStoreException.type
+AssertionError: AssertionError.type
+AutoCloseable: AutoCloseable.type
+Boolean: Boolean.type
+BootstrapMethodError: BootstrapMethodError.type
+Byte: Byte.type
+Character: Character.type
+CharSequence: CharSequence.type
+Class: Class.type
+ClassCastException: ClassCastException.type
+ClassCircularityError: ClassCircularityError.type
+ClassFormatError: ClassFormatError.type
+ClassLoader: ClassLoader.type
+ClassNotFoundException: ClassNotFoundException.type
+ClassValue: ClassValue.type
+Cloneable: Cloneable.type
+CloneNotSupportedException: CloneNotSupportedException.type
+Comparable: Comparable.type
+Compiler: Compiler.type
+Deprecated: Deprecated.type
+Double: Double.type
+Enum: Enum.type
+EnumConstantNotPresentException: EnumConstantNotPresentException.type
+Error: Error.type
+Exception: Exception.type
+ExceptionInInitializerError: ExceptionInInitializerError.type
+Float: Float.type
+FunctionalInterface: FunctionalInterface.type
+IllegalAccessError: IllegalAccessError.type
+IllegalAccessException: IllegalAccessException.type
+IllegalArgumentException: IllegalArgumentException.type
+IllegalCallerException: IllegalCallerException.type
+IllegalMonitorStateException: IllegalMonitorStateException.type
+IllegalStateException: IllegalStateException.type
+IllegalThreadStateException: IllegalThreadStateException.type
+IncompatibleClassChangeError: IncompatibleClassChangeError.type
+IndexOutOfBoundsException: IndexOutOfBoundsException.type
+InheritableThreadLocal: InheritableThreadLocal.type
+InstantiationError: InstantiationError.type
+InstantiationException: InstantiationException.type
+instrument: instrument.type
+Integer: Integer.type
+InternalError: InternalError.type
+InterruptedException: InterruptedException.type
+invoke: invoke.type
+Iterable: Iterable.type
+LayerInstantiationException: LayerInstantiationException.type
+LinkageError: LinkageError.type
+Long: Long.type
+management: management.type
+Math: Math.type
+module: module.type
+Module: Module.type
+ModuleLayer: ModuleLayer.type
+NegativeArraySizeException: NegativeArraySizeException.type
+NoClassDefFoundError: NoClassDefFoundError.type
+NoSuchFieldError: NoSuchFieldError.type
+NoSuchFieldException: NoSuchFieldException.type
+NoSuchMethodError: NoSuchMethodError.type
+NoSuchMethodException: NoSuchMethodException.type
+NullPointerException: NullPointerException.type
+Number: Number.type
+NumberFormatException: NumberFormatException.type
+Object: Object.type
+OutOfMemoryError: OutOfMemoryError.type
+Override: Override.type
+Package: Package.type
+Process: Process.type
+ProcessBuilder: ProcessBuilder.type
+ProcessHandle: ProcessHandle.type
+Readable: Readable.type
+ref: ref.type
+reflect: reflect.type
+ReflectiveOperationException: ReflectiveOperationException.type
+Runnable: Runnable.type
+Runtime: Runtime.type
+RuntimeException: RuntimeException.type
+RuntimePermission: RuntimePermission.type
+SafeVarargs: SafeVarargs.type
+SecurityException: SecurityException.type
+SecurityManager: SecurityManager.type
+Short: Short.type
+StackOverflowError: StackOverflowError.type
+StackTraceElement: StackTraceElement.type
+StackWalker: StackWalker.type
+StrictMath: StrictMath.type
+String: String.type
+StringBuffer: StringBuffer.type
+StringBuilder: StringBuilder.type
+StringIndexOutOfBoundsException: StringIndexOutOfBoundsException.type
+SuppressWarnings: SuppressWarnings.type
+System: System.type
+Thread: Thread.type
+ThreadDeath: ThreadDeath.type
+ThreadGroup: ThreadGroup.type
+ThreadLocal: ThreadLocal.type
+Throwable: Throwable.type
+TypeNotPresentException: TypeNotPresentException.type
+UnknownError: UnknownError.type
+UnsatisfiedLinkError: UnsatisfiedLinkError.type
+UnsupportedClassVersionError: UnsupportedClassVersionError.type
+UnsupportedOperationException: UnsupportedOperationException.type
+VerifyError: VerifyError.type
+VirtualMachineError: VirtualMachineError.type
+Void: Void.type
+=========
+> src/main/scala/simple.scala complete src/main/scala.interactive/simple3.scala 165
+!=(x: Int)Boolean
+%(x: Int)Int
+&(x: Int)Int
+*(x: Int)Int
++(x: Int)Int
+-(x: Int)Int
+/(x: Int)Int
+<(x: Int)Boolean
+<<(x: Int)Int
+<=(x: Int)Boolean
+==(x: Int)Boolean
+>(x: Int)Boolean
+>=(x: Int)Boolean
+>>(x: Int)Int
+>>>(x: Int)Int
+^(x: Int)Int
+abs: => Double
+byteValue: ()Byte
+ceil: => Double
+compare(y: Double)Int
+compare(y: Long)Int
+compareTo(that: Double)Int
+compareTo(that: Long)Int
+compareTo(_: Double)Int
+compareTo(_: Long)Int
+doubleValue: ()Double
+floatValue: ()Float
+floor: => Double
+formatted(fmtstr: String)String
+getClass: ()Class[Int]
+hashCode: ()Int
+intValue: ()Int
+isInfinite: ()Boolean
+isInfinity: => Boolean
+isNaN: ()Boolean
+isNegInfinity: => Boolean
+isPosInfinity: => Boolean
+isValidByte: => Boolean
+isValidChar: => Boolean
+isValidInt: => Boolean
+isValidLong: => Boolean
+isValidShort: => Boolean
+isWhole: ()Boolean
+longValue: ()Long
+max(that: Double)Double
+max(that: Long)Long
+min(that: Double)Double
+min(that: Long)Long
+round: => Long
+self: Double
+shortValue: ()Short
+signum: => Int
+to(end: Double)Range.Partial[Double,NumericRange[Double]]
+to(end: Double, step: Double)NumericRange.Inclusive[Double]
+to(end: Long)NumericRange.Inclusive[Long]
+to(end: Long, step: Long)NumericRange.Inclusive[Long]
+toBinaryString: => String
+toByte: => Byte
+toChar: => Char
+toDegrees: => Double
+toDouble: => Double
+toFloat: => Float
+toHexString: => String
+toInt: => Int
+toLong: => Long
+toOctalString: => String
+toRadians: => Double
+toShort: => Short
+toString: ()String
+underlying: ()AnyRef
+until(end: Double)Range.Partial[Double,NumericRange[Double]]
+until(end: Double, step: Double)NumericRange.Exclusive[Double]
+until(end: Long)NumericRange.Exclusive[Long]
+until(end: Long, step: Long)NumericRange.Exclusive[Long]
+|(x: Int)Int
+=========
+> src/main/scala/simple.scala search List
+scala.collection.immutable.List
+=========
+> src/main/scala/simple.scala search String
+scala.math.Ordering.String
+=========
+> src/main/scala/simple.scala search Foo
+simple.Foo
+=========
+> src/main/scala/simple.scala search Paths
+=========
+> src/main/scala/simple.scala fqn src/main/scala/simple.scala 108
+Lscala/collection/TraversableLike;.map(Lscala/Function1;Lscala/collection/generic/CanBuildFrom;)Ljava/lang/Object;
+=========
+> src/main/scala/simple.scala fqn src/main/scala/simple.scala 130
+Lscala/collection/TraversableOnce;.toList()Lscala/collection/immutable/List;
+=========
+> src/main/scala/simple.scala fqn src/main/scala/simple.scala 186
+Ljava/util/regex/Pattern;.compile(Ljava/lang/String;)Ljava/util/regex/Pattern;
+=========
+> src/main/scala/simple.scala fqn src/main/scala/simple.scala 233
+Ljava/nio/file/Files;.notExists(Ljava/nio/file/Path;[Ljava/nio/file/LinkOption;)Z
+=========
+> src/main/scala/simple.scala fqn src/main/scala/simple.scala 454
+Lscala/Serializable;
+=========
+> src/main/scala/simple.scala binary src/main/scala/simple.scala 108
+HOME/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-lang/scala-library/2.11.12/scala-library-2.11.12.jar!/scala/collection/TraversableLike.class
+=========
+> src/main/scala/simple.scala binary src/main/scala/simple.scala 130
+HOME/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-lang/scala-library/2.11.12/scala-library-2.11.12.jar!/scala/collection/TraversableOnce.class
+=========
+> src/main/scala/simple.scala source src/main/scala/simple.scala 120
+=========
+> src/main/scala/simple.scala source src/main/scala/simple.scala 108
+HOME/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-lang/scala-library/2.11.12/scala-library-2.11.12-sources.jar!/scala/collection/TraversableLike.scala:0
+=========
+> src/main/scala/simple.scala source src/main/scala/simple.scala 130
+HOME/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-lang/scala-library/2.11.12/scala-library-2.11.12-sources.jar!/scala/collection/TraversableOnce.scala:0
+=========
+> src/main/scala/simple.scala source src/main/scala/simple.scala 81
+=========
+> src/main/scala/simple.scala source src/main/scala/simple.scala 75
+HOME/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-lang/scala-library/2.11.12/scala-library-2.11.12-sources.jar!/scala/Array.scala:503
+=========
+> src/main/scala/simple.scala source src/main/scala/simple.scala 454
+HOME/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-lang/scala-library/2.11.12/scala-library-2.11.12-sources.jar!/scala/Serializable.scala:0
+=========
+> src/main/scala/simple.scala source src/main/scala/simple.scala 153
+PWD/src/main/scala/simplelib.scala:4
+=========
+> src/main/scala/simple.scala complete src/main/scala.interactive/simple2.scala 106 src/main/scala.interactive/simplelib.scala
+bar: String
+foo: List[Boolean]
+formatted(fmtstr: String)String
+hashCode: ()Int
+toString: ()String
+=========
+> src/main/scala/simple.scala source src/main/scala.interactive/simple2.scala 104 src/main/scala.interactive/simplelib.scala
+PWD/src/main/scala.interactive/simplelib.scala:3
+=========
+> src/main/scala/simple.scala source src/main/scala.interactive/simple3.scala 104
+:11
+=========
