@@ -51,6 +51,7 @@ object Plugin {
       case s: String => List(setting.name, s)
       case lst: List[_] => List((setting.name :: lst.map(_.toString)).mkString(":"))
       case i: Int => List(setting.name, i.toString)
+      case b: Boolean => List(setting.name)
       case other =>
         System.err.println(s"ENSIME unexpected scalac Setting type ${other.getClass}")
         Nil

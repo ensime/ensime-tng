@@ -204,8 +204,9 @@ May ask the user to disambiguate."
            (with-temp-buffer
              (insert-file-contents launcher)
              (goto-char (point-min))
-             (re-search-forward (rx "HASH=" (group (+ not-newline)) line-end))
-             (match-string 1))))
+             (if (re-search-forward (rx "HASH=" (group (+ not-newline)) line-end) (point-max) t)
+                 (match-string 1)
+               'none))))
      ensime--hash)))
 
 ;; returns a list of filenames that match the hash of the current buffer
