@@ -1,5 +1,3 @@
-ThisBuild / scalaVersion := "2.13.7"
-
 name := "simple"
 
 scalacOptions ++= {

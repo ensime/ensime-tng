@@ -465,25 +465,25 @@ Ljava/nio/file/Files;.notExists(Ljava/nio/file/Path;[Ljava/nio/file/LinkOption;)
 Ljava/io/Serializable;
 =========
 > src/main/scala/simple.scala binary src/main/scala/simple.scala 108
-HOME/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-lang/scala-library/2.13.7/scala-library-2.13.7.jar!/scala/collection/ArrayOps.class
+HOME/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-lang/scala-library/2.13.8/scala-library-2.13.8.jar!/scala/collection/ArrayOps.class
 =========
 > src/main/scala/simple.scala binary src/main/scala/simple.scala 130
-HOME/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-lang/scala-library/2.13.7/scala-library-2.13.7.jar!/scala/collection/IterableOnceOps.class
+HOME/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-lang/scala-library/2.13.8/scala-library-2.13.8.jar!/scala/collection/IterableOnceOps.class
 =========
 > src/main/scala/simple.scala source src/main/scala/simple.scala 120
 JAVA_HOME/lib/src.zip!/java.base/java/lang/String.java:2527
 =========
 > src/main/scala/simple.scala source src/main/scala/simple.scala 108
-HOME/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-lang/scala-library/2.13.7/scala-library-2.13.7-sources.jar!/scala/collection/ArrayOps.scala:923
+HOME/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-lang/scala-library/2.13.8/scala-library-2.13.8-sources.jar!/scala/collection/ArrayOps.scala:923
 =========
 > src/main/scala/simple.scala source src/main/scala/simple.scala 130
-HOME/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-lang/scala-library/2.13.7/scala-library-2.13.7-sources.jar!/scala/collection/IterableOnce.scala:1251
+HOME/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-lang/scala-library/2.13.8/scala-library-2.13.8-sources.jar!/scala/collection/IterableOnce.scala:1251
 =========
 > src/main/scala/simple.scala source src/main/scala/simple.scala 81
 JAVA_HOME/lib/src.zip!/java.base/java/lang/String.java:125
 =========
 > src/main/scala/simple.scala source src/main/scala/simple.scala 75
-HOME/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-lang/scala-library/2.13.7/scala-library-2.13.7-sources.jar!/scala/Array.scala:47
+HOME/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-lang/scala-library/2.13.8/scala-library-2.13.8-sources.jar!/scala/Array.scala:47
 =========
 > src/main/scala/simple.scala source src/main/scala/simple.scala 454
 JAVA_HOME/lib/src.zip!/java.base/java/io/Serializable.java:0

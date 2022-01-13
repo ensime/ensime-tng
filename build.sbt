@@ -1,8 +1,8 @@
 organization := "com.fommil"
 name := "ensime"
 
-ThisBuild / crossScalaVersions := List("3.1.0", "2.13.7", "2.12.15", "2.11.12")
-ThisBuild / scalaVersion := "2.13.7"
+ThisBuild / crossScalaVersions := List("3.1.0", "2.13.8", "2.12.15", "2.11.12")
+ThisBuild / scalaVersion := "2.13.8"
 
 Compile / unmanagedSourceDirectories ++= {
   val dir = (Compile / scalaSource).value
