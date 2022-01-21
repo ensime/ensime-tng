@@ -182,7 +182,7 @@ object Compiler {
   implicit class RichResponse[A](resp: interactive.Response[A]) {
     def success: A = resp.get match {
       case Left(a) => a
-      case Right(_) => ???
+      case Right(err) => throw err
     }
   }
 
