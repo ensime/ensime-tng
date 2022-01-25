@@ -214,8 +214,8 @@ object Compiler {
 
   def pos(f: SourceFile, s: String): SourcePosition = s.split(":").toList match {
     case o :: Nil => SourcePosition(f, Spans.Span(o.toInt))
-    case col :: row :: Nil => ???
-    case _ => ???
+    case col :: row :: Nil => throw new IllegalArgumentException(s"col:row ($col:$row) positions are not supported yet")
+    case other => throw new IllegalArgumentException(s"not a valid position '$other'")
   }
 
   def cp(settings: List[String]): List[URI] = {
