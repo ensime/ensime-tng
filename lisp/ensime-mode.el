@@ -231,7 +231,8 @@ May ask the user to disambiguate."
              (remove (current-buffer) (buffer-list)))))))
 
 (defun ensime--launcher ()
-  (when (not buffer-read-only)
+  (when (and buffer-file-name
+             (not buffer-read-only))
     (let ((launcher (concat "~/.cache/ensime" buffer-file-name)))
       (when (file-exists-p launcher)
         launcher))))
