@@ -8,6 +8,7 @@ import dotty.tools.dotc.config.ScalaSettings
 import dotty.tools.dotc.config.Settings.Setting
 import dotty.tools.dotc.core.Contexts.Context
 import dotty.tools.dotc.core.Mode
+import dotty.tools.dotc.parsing.Parser
 import dotty.tools.dotc.plugins.{ PluginPhase, StandardPlugin }
 import dotty.tools.dotc.typer.TyperPhase
 import dotty.tools.io.AbstractFile
@@ -37,7 +38,11 @@ class Plugin extends StandardPlugin {
       super.runOn(units)
     }
 
-    override val runsAfter: Set[String] = Set(TyperPhase.name)
+    // pre-typer plugins are apparently not allowed in releases, just research
+    // plugions, but they apparently forgot to disable it :-D
+    // https://github.com/lampepfl/dotty/pull/13173
+    override val runsAfter: Set[String] = Set(Parser.name)
+    override val runsBefore: Set[String] = Set(TyperPhase.name)
   }
 
   def init(options: List[String]): List[PluginPhase] = phase :: Nil
