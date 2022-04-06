@@ -46,3 +46,10 @@ while [ -z $NAILGUN_PORT ] ; do
 done
 
 ng ensime.Main __USER_SETTINGS__ $*
+
+RESP=$?
+if [ $RESP = "230" ] ; then
+    echo "NAILGUN_CONNECT_FAILED, wiping $DIR" 1>&2
+    rm -rf "$DIR"
+fi
+exit $RESP
