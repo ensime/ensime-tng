@@ -15,6 +15,28 @@ The feature set is constrained to allow the codebase to be lean and maintainable
 
 # Installation
 
+Type
+
+```
+sbt +install
+```
+
+from this directory and then choose to use LSP with a text editor of your choice, or an optimised Emacs-specific mode.
+
+## LSP
+
+Type
+
+```
+sbt lsp/install
+```
+
+from this directory.
+
+TODO editor specific config.
+
+## Emacs
+
 Install the Emacs mode when enabling `scala-mode` and add your keybindings, e.g.
 
 ```lisp

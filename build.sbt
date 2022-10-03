@@ -54,3 +54,23 @@ install := {
   streams.value.log.info(s"Installing $plugin")
   IO.copyFile(file("project/EnsimePlugin.scala"), plugin)
 }
+
+val lsp = project
+  .enablePlugins(BuildInfoPlugin)
+  .settings(
+    libraryDependencies ++= Seq(
+      "org.eclipse.lsp4j" % "org.eclipse.lsp4j" % "0.15.0"
+    ),
+
+    assembly / assemblyJarName := "ensime-lsp.jar",
+    assemblyMergeStrategy := {
+      case "rootdoc.txt" => MergeStrategy.discard
+      case x => assemblyMergeStrategy.value(x)
+    },
+
+    install := {
+      val ensimeLspJar = file(s"""${sys.props("user.home")}/.ensime/ensime-lsp.jar""")
+      streams.value.log.info(s"Installing ENSIME LSP to $ensimeLspJar")
+      IO.write(ensimeLspJar, IO.readBytes(assembly.value))
+    }
+)
