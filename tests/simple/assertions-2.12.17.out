@@ -77,7 +77,6 @@ foldLeft[B](z: B)(op: (B, String) => B)B
 foldRight[B](z: B)(op: (String, B) => B)B
 forall(p: String => Boolean)Boolean
 foreach[U](f: String => U)Unit
-formatted(fmtstr: String)String
 genericBuilder: [B]=> Builder[B,IndexedSeq[B]]
 groupBy[K](f: String => K)Map[K,Array[String]]
 grouped(size: Int)Iterator[Array[String]]
@@ -352,7 +351,6 @@ compareTo(_: Long)Int
 doubleValue: ()Double
 floatValue: ()Float
 floor: => Double
-formatted(fmtstr: String)String
 getClass: ()Class[Int]
 hashCode: ()Int
 intValue: ()Int
@@ -437,28 +435,28 @@ Ljava/nio/file/Files;.notExists(Ljava/nio/file/Path;[Ljava/nio/file/LinkOption;)
 Lscala/Serializable;
 =========
 > src/main/scala/simple.scala binary src/main/scala/simple.scala 108
-HOME/.sbt/boot/scala-2.12.15/lib/scala-library.jar!/scala/collection/TraversableLike.class
+HOME/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-lang/scala-library/2.12.17/scala-library-2.12.17.jar!/scala/collection/TraversableLike.class
 =========
 > src/main/scala/simple.scala binary src/main/scala/simple.scala 130
-HOME/.sbt/boot/scala-2.12.15/lib/scala-library.jar!/scala/collection/IndexedSeqOptimized.class
+HOME/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-lang/scala-library/2.12.17/scala-library-2.12.17.jar!/scala/collection/IndexedSeqOptimized.class
 =========
 > src/main/scala/simple.scala source src/main/scala/simple.scala 120
 JAVA_HOME/lib/src.zip!/java.base/java/lang/String.java:2527
 =========
 > src/main/scala/simple.scala source src/main/scala/simple.scala 108
-HOME/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-lang/scala-library/2.12.15/scala-library-2.12.15-sources.jar!/scala/collection/TraversableLike.scala:285
+HOME/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-lang/scala-library/2.12.17/scala-library-2.12.17-sources.jar!/scala/collection/TraversableLike.scala:285
 =========
 > src/main/scala/simple.scala source src/main/scala/simple.scala 130
-HOME/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-lang/scala-library/2.12.15/scala-library-2.12.15-sources.jar!/scala/collection/IndexedSeqOptimized.scala:285
+HOME/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-lang/scala-library/2.12.17/scala-library-2.12.17-sources.jar!/scala/collection/IndexedSeqOptimized.scala:285
 =========
 > src/main/scala/simple.scala source src/main/scala/simple.scala 81
 JAVA_HOME/lib/src.zip!/java.base/java/lang/String.java:125
 =========
 > src/main/scala/simple.scala source src/main/scala/simple.scala 75
-HOME/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-lang/scala-library/2.12.15/scala-library-2.12.15-sources.jar!/scala/Array.scala:350
+HOME/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-lang/scala-library/2.12.17/scala-library-2.12.17-sources.jar!/scala/Array.scala:350
 =========
 > src/main/scala/simple.scala source src/main/scala/simple.scala 454
-HOME/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-lang/scala-library/2.12.15/scala-library-2.12.15-sources.jar!/scala/Serializable.scala:0
+HOME/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-lang/scala-library/2.12.17/scala-library-2.12.17-sources.jar!/scala/Serializable.scala:0
 =========
 > src/main/scala/simple.scala source src/main/scala/simple.scala 153
 PWD/src/main/scala/simplelib.scala:4
@@ -466,7 +464,6 @@ PWD/src/main/scala/simplelib.scala:4
 > src/main/scala/simple.scala complete src/main/scala.interactive/simple2.scala 106 src/main/scala.interactive/simplelib.scala
 bar: String
 foo: List[Boolean]
-formatted(fmtstr: String)String
 hashCode: ()Int
 toString: ()String
 =========

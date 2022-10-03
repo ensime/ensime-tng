@@ -3,8 +3,8 @@ name := "ensime"
 
 licenses := List(License.GPL3_or_later)
 
-ThisBuild / crossScalaVersions := List("3.1.1", "2.13.8", "2.12.15", "2.11.12")
-ThisBuild / scalaVersion := "2.13.8"
+ThisBuild / crossScalaVersions := List("3.2.0", "2.13.9", "2.12.17", "2.11.12")
+ThisBuild / scalaVersion := "2.13.9"
 
 Compile / unmanagedSourceDirectories ++= {
   val dir = (Compile / scalaSource).value
