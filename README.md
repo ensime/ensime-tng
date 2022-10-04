@@ -25,15 +25,29 @@ from this directory and then choose to use LSP with a text editor of your choice
 
 ## LSP
 
+### Server
+
 Type
 
 ```
 sbt lsp/install
 ```
 
-from this directory.
+from this directory and then setup the LSP for your editor.
 
-TODO editor specific config.
+### Client
+
+#### VSCode
+
+You must compile the LSP client for VSCode, which will require installing npm and typescript.
+
+```
+cd lsp/vscode
+npm install
+npm run package
+```
+
+Then, in VSCode, go to the Extension manager and "Install from VSIX", choosing the `.vsix` file that you just built.
 
 ## Emacs
 

@@ -56,12 +56,15 @@ install := {
 }
 
 val lsp = project
-  .enablePlugins(BuildInfoPlugin)
   .settings(
     libraryDependencies ++= Seq(
       "org.eclipse.lsp4j" % "org.eclipse.lsp4j" % "0.15.0"
     ),
 
+    // https://github.com/eclipse/lsp4j/issues/127#issuecomment-343781551
+    scalacOptions += "-Xmixin-force-forwarders:false",
+
+    assembly / mainClass := Some("ensime.EnsimeLsp"),
     assembly / assemblyJarName := "ensime-lsp.jar",
     assemblyMergeStrategy := {
       case "rootdoc.txt" => MergeStrategy.discard
