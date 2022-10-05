@@ -11,7 +11,7 @@ let client: LanguageClient;
 
 export function activate(context: vscode.ExtensionContext) {
         const os = require("os");
-	const runArgs: string[] = ["-jar", "~/.ensime/ensime-lsp.jar".replace("~", os.homedir)];
+	const runArgs: string[] = ["-jar", "~/.cache/ensime/lib/ensime-lsp.jar".replace("~", os.homedir)];
 	const debugArgs: string[] = runArgs;
 	const javaPath = "java" ;
 

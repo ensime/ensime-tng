@@ -72,7 +72,7 @@ val lsp = project
     },
 
     install := {
-      val ensimeLspJar = file(s"""${sys.props("user.home")}/.ensime/ensime-lsp.jar""")
+      val ensimeLspJar = file(s"""${sys.props("user.home")}/.cache/ensime/lib/ensime-lsp.jar""")
       streams.value.log.info(s"Installing ENSIME LSP to $ensimeLspJar")
       IO.write(ensimeLspJar, IO.readBytes(assembly.value))
     }
