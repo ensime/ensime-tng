@@ -194,18 +194,24 @@ class EnsimeLsp extends LanguageServer with LanguageClientAware {
 
     override def didSave(p: DidSaveTextDocumentParams): Unit = ()
 
+    // https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_completion
     override def completion(params: CompletionParams): CompletableFuture[LspEither[JList[CompletionItem], CompletionList]] = async {
       withDoc(params.getTextDocument.getUri) { f =>
+        // TODO quick check to make sure the request is definitely immediately following a dot
+
         val completions = ensime("complete", f, params.getPosition).split("\n").toList.map { sig =>
-          new CompletionItem(sig)
+          val item = new CompletionItem()
+          item.setLabel(sig)
+          item.setInsertTextFormat(InsertTextFormat.Snippet)
+
+          // TODO remove the dot when it's symbolic
+
+          val snippet = SigParser.snippet(SigParser.parse(sig).stripImplicit)
+          item.setInsertText(snippet)
+          item
         }
 
-        // TODO implement completion
         // TODO insert/replace stuff
-        // TODO label should be the full signature, insertText should be the name only
-        // TODO port over special cases from Emacs (e.g. removing the dot for symbols)
-        // TODO how to do parameter templates
-        // https://github.com/scalameta/metals/blob/f674cb973d183c3e0f4d1f91f86c0b07be11c1bf/mtags/src/main/scala-2/scala/meta/internal/pc/completions/ArgCompletions.scala#L121
         LspEither.forRight(new CompletionList(completions.asJava))
       }
     }

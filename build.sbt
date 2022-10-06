@@ -66,8 +66,12 @@ val lsp = project
   .settings(
     crossScalaVersions := Seq(),
     libraryDependencies ++= Seq(
-      "org.eclipse.lsp4j" % "org.eclipse.lsp4j" % "0.15.0"
+      "org.eclipse.lsp4j" % "org.eclipse.lsp4j" % "0.16.0",
+      "com.novocode" % "junit-interface" % "0.11" % Test,
+      "junit" % "junit" % "4.13.2" % Test
     ),
+    crossPaths := false, // https://github.com/sbt/junit-interface/issues/35
+    testOptions += Tests.Argument(TestFrameworks.JUnit, "-v"),
 
     scalacOptions += "-deprecation",
 
