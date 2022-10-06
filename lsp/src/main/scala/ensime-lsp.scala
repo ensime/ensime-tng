@@ -3,6 +3,7 @@ package ensime
 import java.io.File
 import java.net.URI
 import java.nio.file.Files
+import java.nio.file.StandardOpenOption.{ CREATE, TRUNCATE_EXISTING }
 import java.util.concurrent.CompletableFuture
 
 import scala.concurrent.Future
@@ -21,7 +22,7 @@ import java.util.{ List => JList }
 
 object EnsimeLsp {
   def main(args: Array[String]): Unit = {
-    System.err.println("Starting ENSIME LSP (stderr)")
+    System.err.println("Starting ENSIME LSP")
     val server = new EnsimeLsp
     val launcher = LSPLauncher.createServerLauncher(server, System.in, System.out)
     val client = launcher.getRemoteProxy()
@@ -93,16 +94,16 @@ class EnsimeLsp extends LanguageServer with LanguageClientAware {
   // of this is that files which are changed but not part of the active set will
   // be ignored, which is an intentional design decision (the user is expected
   // to compile files all dependencies). The response does not contain the
-  // input. None means that the focus does not have an ensime file.
-  private def activeSet(focus: File): Option[Set[File]] = ensimeFile(focus) match {
-    case None => None
+  // input.
+  private def activeSet(focus: File): Set[File] = ensimeFile(focus) match {
+    case None => Set()
     case Some(focusEnsime) =>
       val hash = ensimeHash(focusEnsime)
-      System.err.println(s"CALCULATING ACTIVE SET FOR $hash")
+      // System.err.println(s"CALCULATING ACTIVE SET FOR $hash")
       val others = (openFiles.keySet - focus).flatMap(ensimeFile).filter {
         e => ensimeHash(e) == hash
       }
-      Some(others)
+      others
   }
 
   private val cacheDir = sys.props("user.home") + "/.cache/ensime/"
@@ -131,19 +132,62 @@ class EnsimeLsp extends LanguageServer with LanguageClientAware {
   }
   @volatile private var lastEnsimeExe: Option[File] = None
 
+  // shared between all ensime instances, this could be made cleaner by adding HASH
+  private val tmp_prefix: String = s"/tmp/${sys.props("user.name")}/ensime/"
+
+  // assumes that File is present in openFiles and will return the file as-is if
+  // the in-memory representation matches what is on disk. Otherwise, a
+  // temporary file is created (having the same name) and returned. Note that
+  // this will break the ability to link compiler reporter messages back to
+  // their original filenames.
+  private def tmpIfDifferent(f: File): File = {
+    val inmemory = openFiles.get(f).getOrElse(throw new IllegalStateException(s"expected $f to exist in $openFiles"))
+    val disk = Files.readString(f.toPath)
+
+    // maybe need to do some whitespace normalisation...
+    if (inmemory == disk) f
+    else {
+      // we never clean these up
+      val tmp = new File(tmp_prefix + f.getAbsolutePath)
+      // System.err.println(s"writing temp file for $f as $tmp")
+      tmp.getParentFile().mkdirs()
+      Files.writeString(tmp.toPath, inmemory, CREATE, TRUNCATE_EXISTING)
+      tmp
+    }
+  }
+
+  private def ensime(mode: String, f: File, pos: Position): String = {
+    val exe = ensimeExe(f)
+    val target = tmpIfDifferent(f)
+    val active = activeSet(f).map(tmpIfDifferent(_))
+    val context = active.mkString(" ")
+
+    val stderr = new StringBuilder
+    val processLogger = ProcessLogger(_ => (), stderr.append(_))
+
+    val command = s"$exe $mode $target ${pos.getLine}:${pos.getCharacter} $context"
+    System.err.println(command)
+
+    try command.!!
+    finally {
+      if (stderr.nonEmpty)
+        System.err.println(stderr.toString)
+    }
+  }
+
   override def getTextDocumentService(): TextDocumentService = new TextDocumentService {
     // we only care about monitoring the active set
     override def didClose(p: DidCloseTextDocumentParams): Unit = withDoc(p.getTextDocument.getUri) { f =>
-      System.err.println(s"CLOSED $f")
+      // System.err.println(s"CLOSED $f")
       openFiles -= f
     }
     override def didOpen(p: DidOpenTextDocumentParams): Unit = withDoc(p.getTextDocument.getUri) { f =>
-      System.err.println(s"OPENED $f")
+      // System.err.println(s"OPENED $f")
       val content = p.getTextDocument.getText
       openFiles = openFiles + (f -> content)
     }
     override def didChange(p: DidChangeTextDocumentParams): Unit = withDoc(p.getTextDocument.getUri) { f =>
-      System.err.println(s"CHANGED $f")
+      // System.err.println(s"CHANGED $f")
       val content = p.getContentChanges.get(0).getText // Full means this is not a diff
       openFiles = openFiles + (f -> content)
     }
@@ -152,34 +196,23 @@ class EnsimeLsp extends LanguageServer with LanguageClientAware {
 
     override def completion(params: CompletionParams): CompletableFuture[LspEither[JList[CompletionItem], CompletionList]] = async {
       withDoc(params.getTextDocument.getUri) { f =>
-        System.err.println(s"COMPLETE $f at ${params.getPosition}, active set is ${activeSet(f)}")
+        val completions = ensime("complete", f, params.getPosition).split("\n").toList.map { sig =>
+          new CompletionItem(sig)
+        }
 
         // TODO implement completion
         // TODO insert/replace stuff
         // TODO label should be the full signature, insertText should be the name only
         // TODO port over special cases from Emacs (e.g. removing the dot for symbols)
         // TODO how to do parameter templates
-        val completion = new CompletionList(
-          List(new CompletionItem("wibble")).asJava
-        )
-
-        LspEither.forRight(completion)
+        // https://github.com/scalameta/metals/blob/f674cb973d183c3e0f4d1f91f86c0b07be11c1bf/mtags/src/main/scala-2/scala/meta/internal/pc/completions/ArgCompletions.scala#L121
+        LspEither.forRight(new CompletionList(completions.asJava))
       }
     }
 
     override def hover(params: HoverParams): CompletableFuture[Hover] = async {
       withDoc(params.getTextDocument.getUri()) { f =>
-
-        val pos = (params.getPosition.getLine, params.getPosition.getCharacter)
-        val active = activeSet(f).map(_.mkString(" ")).getOrElse("")
-
-        System.err.println(s"HOVER $f at ${pos}, active set is ${active}")
-
-        val exe = ensimeExe(f)
-        val stderr = new StringBuilder
-        val processLogger = ProcessLogger(_ => (), stderr.append(_))
-        val output = s"$exe type $f ${pos._1}:${pos._2} $active".!!
-
+        val output = ensime("type", f, params.getPosition)
         val content = new MarkupContent("plaintext", output)
         new Hover(content)
       }
