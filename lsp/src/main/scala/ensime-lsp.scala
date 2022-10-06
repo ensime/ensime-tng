@@ -170,17 +170,17 @@ class EnsimeLsp extends LanguageServer with LanguageClientAware {
     override def hover(params: HoverParams): CompletableFuture[Hover] = async {
       withDoc(params.getTextDocument.getUri()) { f =>
 
-        // TODO convert position into offset
         val pos = (params.getPosition.getLine, params.getPosition.getCharacter)
+        val active = activeSet(f).map(_.mkString(" ")).getOrElse("")
 
-        System.err.println(s"HOVER $f at ${pos}, active set is ${activeSet(f)}")
+        System.err.println(s"HOVER $f at ${pos}, active set is ${active}")
 
         val exe = ensimeExe(f)
-        //s"$exe type $f "
+        val stderr = new StringBuilder
+        val processLogger = ProcessLogger(_ => (), stderr.append(_))
+        val output = s"$exe type $f ${pos._1}:${pos._2} $active".!!
 
-
-        // FIXME implement as type at point (possibly symbol + type)
-        val content = LspEither.forLeft[String, MarkedString]("hover info goes here")
+        val content = new MarkupContent("plaintext", output)
         new Hover(content)
       }
     }

@@ -15,13 +15,25 @@ The feature set is constrained to allow the codebase to be lean and maintainable
 
 # Installation
 
-Type
+If upgrading, always delete old versions of ENSIME first
+
+```
+rm -rf ~/.cache/ensime
+```
+
+Then install the latest version with
 
 ```
 sbt +install
 ```
 
 from this directory and then choose to use LSP with a text editor of your choice, or an optimised Emacs-specific mode.
+
+You may need to install additional builds for specific versions of the compiler for projects (and their project definitions) that are using an older version of the compiler, e.g.
+
+```
+sbt ++2.12.15! install
+```
 
 ## LSP
 

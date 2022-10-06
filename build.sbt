@@ -2,7 +2,13 @@ organization := "com.fommil"
 
 licenses := List(License.GPL3_or_later)
 
-ThisBuild / crossScalaVersions := List("3.2.0", "2.13.9", "2.12.17", "2.11.12")
+ThisBuild / crossScalaVersions := List(
+  "3.2.0",
+  "2.13.9",
+  "2.12.15", // the version of scala used by sbt 1.6.2
+  "2.12.17",
+  "2.11.12"
+)
 ThisBuild / scalaVersion := "2.13.9"
 
 val install = taskKey[Unit]("Install the ENSIME jar.")
@@ -62,6 +68,8 @@ val lsp = project
     libraryDependencies ++= Seq(
       "org.eclipse.lsp4j" % "org.eclipse.lsp4j" % "0.15.0"
     ),
+
+    scalacOptions += "-deprecation",
 
     // https://github.com/eclipse/lsp4j/issues/127#issuecomment-343781551
     scalacOptions += "-Xmixin-force-forwarders:false",

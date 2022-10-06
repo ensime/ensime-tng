@@ -92,6 +92,7 @@ object Launcher {
     } finally is.close()
   }
 
+  // row and column are zero-indexed (as per the LSP)
   def toOffset(row: Int, col: Int, content: Array[Char]): Int = {
     var i = 0 // offset
     var line = 0 // current line number
