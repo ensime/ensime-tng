@@ -189,7 +189,7 @@ object Compiler {
   // offset or col:row
   def pos(f: SourceFile, s: String): Position = s.split(":").toList match {
     case o :: Nil => Position.offset(f, o.toInt)
-    case col :: row :: Nil => throw new IllegalArgumentException(s"col:row ($col:$row) positions are not supported yet")
+    case row :: col :: Nil => Position.offset(f, Launcher.toOffset(row.toInt - 1, col.toInt - 1, f.content))
     case other => throw new IllegalArgumentException(s"not a valid position '$other'")
   }
 

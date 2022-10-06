@@ -91,4 +91,16 @@ object Launcher {
       baos.toString("UTF-8")
     } finally is.close()
   }
+
+  def toOffset(row: Int, col: Int, content: Array[Char]): Int = {
+    var i = 0 // offset
+    var line = 0 // current line number
+    while (i < content.length && line < row) {
+      if (content(i) == '\n') {
+        line += 1
+      }
+      i += 1
+    }
+    i + col
+  }
 }

@@ -8,6 +8,7 @@ import java.util.concurrent.CompletableFuture
 import scala.concurrent.Future
 import scala.jdk.FutureConverters._
 import scala.jdk.CollectionConverters._
+import scala.sys.process._
 
 import org.eclipse.lsp4j._
 import org.eclipse.lsp4j.launch.LSPLauncher
@@ -117,6 +118,19 @@ class EnsimeLsp extends LanguageServer with LanguageClientAware {
     }
   }
 
+  // like ensimeFile but also tries to use a "last best known" file which covers
+  // the corner case of new files that haven't been compiled yet.
+  private def ensimeExe(focus: File): File = {
+    val exe = ensimeFile(focus)
+    if (exe.isDefined) {
+      lastEnsimeExe = exe
+      exe.get
+    } else {
+      lastEnsimeExe.getOrElse(throw new IllegalStateException("ENSIME is not available, blah blah instructions to set it up"))
+    }
+  }
+  @volatile private var lastEnsimeExe: Option[File] = None
+
   override def getTextDocumentService(): TextDocumentService = new TextDocumentService {
     // we only care about monitoring the active set
     override def didClose(p: DidCloseTextDocumentParams): Unit = withDoc(p.getTextDocument.getUri) { f =>
@@ -138,9 +152,9 @@ class EnsimeLsp extends LanguageServer with LanguageClientAware {
 
     override def completion(params: CompletionParams): CompletableFuture[LspEither[JList[CompletionItem], CompletionList]] = async {
       withDoc(params.getTextDocument.getUri) { f =>
-        System.err.println(s"COMPLETE $f at ${params.getPosition}, active set is ${openFiles.keySet}")
+        System.err.println(s"COMPLETE $f at ${params.getPosition}, active set is ${activeSet(f)}")
 
-        // FIXME implement completion
+        // TODO implement completion
         // TODO insert/replace stuff
         // TODO label should be the full signature, insertText should be the name only
         // TODO port over special cases from Emacs (e.g. removing the dot for symbols)
@@ -155,7 +169,15 @@ class EnsimeLsp extends LanguageServer with LanguageClientAware {
 
     override def hover(params: HoverParams): CompletableFuture[Hover] = async {
       withDoc(params.getTextDocument.getUri()) { f =>
-        System.err.println(s"HOVER $f at ${params.getPosition()}, open files are ${openFiles.keySet}, active set is ${activeSet(f)}")
+
+        // TODO convert position into offset
+        val pos = (params.getPosition.getLine, params.getPosition.getCharacter)
+
+        System.err.println(s"HOVER $f at ${pos}, active set is ${activeSet(f)}")
+
+        val exe = ensimeExe(f)
+        //s"$exe type $f "
+
 
         // FIXME implement as type at point (possibly symbol + type)
         val content = LspEither.forLeft[String, MarkedString]("hover info goes here")

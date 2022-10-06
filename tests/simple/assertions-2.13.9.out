@@ -4,6 +4,12 @@ String.type
 > src/main/scala/simple.scala symbol src/main/scala.interactive/simple1.scala 38
 java.lang.String
 =========
+> src/main/scala/simple.scala symbol src/main/scala.interactive/simple1.scala 3:18
+java.lang.String
+=========
+> src/main/scala/simple.scala symbol src/main/scala.interactive/simple1.scala 3:23
+java.lang.String
+=========
 > src/main/scala/simple.scala type src/main/scala.interactive/simple1.scala 51
 simple.Main.type
 =========

@@ -45,6 +45,10 @@ for V in $SCALA_VERSIONS ; do
   test_ensime src/main/scala/simple.scala type src/main/scala.interactive/simple1.scala 38
   test_ensime src/main/scala/simple.scala symbol src/main/scala.interactive/simple1.scala 38
 
+  # really a test of the line/col syntax
+  test_ensime src/main/scala/simple.scala symbol src/main/scala.interactive/simple1.scala 3:18
+  test_ensime src/main/scala/simple.scala symbol src/main/scala.interactive/simple1.scala 3:23
+
   test_ensime src/main/scala/simple.scala type src/main/scala.interactive/simple1.scala 51
   test_ensime src/main/scala/simple.scala symbol src/main/scala.interactive/simple1.scala 51
 
