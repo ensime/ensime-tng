@@ -15,6 +15,14 @@ export function activate(context: vscode.ExtensionContext) {
 	const debugArgs: string[] = runArgs;
 	const javaPath = "java" ;
 
+        // TODO custom uri support for jar/zip definitions
+        // TODO allow the user to specify the java command
+        // TODO allow the user to specify the ensime jar
+        // TODO some UX to tell the user if the jar (or compiler plugin dir) is missing
+        // TODO bundle the ensime jar by default
+        // TODO add an icon
+        // TODO publish to the extension store
+
 	const serverOptions: ServerOptions = {
 		run: { command: javaPath, transport: TransportKind.stdio, args: runArgs },
 		debug: { command: javaPath, transport: TransportKind.stdio, args: debugArgs }

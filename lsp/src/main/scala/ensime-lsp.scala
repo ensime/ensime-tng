@@ -25,7 +25,7 @@ object EnsimeLsp {
     System.err.println("Starting ENSIME LSP")
     val server = new EnsimeLsp
     val launcher = LSPLauncher.createServerLauncher(server, System.in, System.out)
-    val client = launcher.getRemoteProxy()
+    val client = launcher.getRemoteProxy
     server.connect(client)
     launcher.startListening()
   }
@@ -44,18 +44,15 @@ class EnsimeLsp extends LanguageServer with LanguageClientAware {
 
     val capabilities = new ServerCapabilities
 
-    // TODO populate with capabilities for these features, and implement below.
-    //
-    // - dot completion (TextDocumentCompletion)
-    // - infer type (TextDocumentHover)
-    // - import / search for class
-    // - jump to source (DeclarationProvider)
+    // - TODO import / search for class (unknown which LSP endpoint this is, possibly code action)
+    // - TODO signatureHelp show the symbol name and type on '(' trigger
 
     // this is inefficient, consider swapping to Incremental and applying diffs
     // as they are received by didChange.
     capabilities.setTextDocumentSync(TextDocumentSyncKind.Full)
 
     capabilities.setHoverProvider(true)
+    capabilities.setDefinitionProvider(true)
 
     capabilities.setCompletionProvider(
       new CompletionOptions(false, List(".").asJava)
@@ -141,7 +138,7 @@ class EnsimeLsp extends LanguageServer with LanguageClientAware {
   // this will break the ability to link compiler reporter messages back to
   // their original filenames.
   private def tmpIfDifferent(f: File): File = {
-    val inmemory = openFiles.get(f).getOrElse(throw new IllegalStateException(s"expected $f to exist in $openFiles"))
+    val inmemory = openFiles.get(f).getOrElse(throw new IllegalStateException(s"expected $f to exist in ${openFiles.keySet}"))
     val disk = Files.readString(f.toPath)
 
     // maybe need to do some whitespace normalisation...
@@ -150,7 +147,7 @@ class EnsimeLsp extends LanguageServer with LanguageClientAware {
       // we never clean these up
       val tmp = new File(tmp_prefix + f.getAbsolutePath)
       // System.err.println(s"writing temp file for $f as $tmp")
-      tmp.getParentFile().mkdirs()
+      tmp.getParentFile.mkdirs()
       Files.writeString(tmp.toPath, inmemory, CREATE, TRUNCATE_EXISTING)
       tmp
     }
@@ -197,32 +194,69 @@ class EnsimeLsp extends LanguageServer with LanguageClientAware {
     // https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_completion
     override def completion(params: CompletionParams): CompletableFuture[LspEither[JList[CompletionItem], CompletionList]] = async {
       withDoc(params.getTextDocument.getUri) { f =>
-        // TODO quick check to make sure the request is definitely immediately following a dot
+        val pos = params.getPosition
+        // editors can sometimes send completion requests in places other than
+        // the defined trigger characters, so be a little protective against
+        // that.
+        val before = new Position(pos.getLine, pos.getCharacter - 1)
+        val charBefore = openFiles(f).split('\n')(before.getLine)(before.getCharacter)
+        val completions = if (charBefore != '.') {
+          Nil
+        } else {
+          ensime("complete", f, pos).split("\n").toList.map { sig =>
+            val item = new CompletionItem
+            item.setLabel(sig)
+            item.setInsertTextFormat(InsertTextFormat.Snippet)
 
-        val completions = ensime("complete", f, params.getPosition).split("\n").toList.map { sig =>
-          val item = new CompletionItem()
-          item.setLabel(sig)
-          item.setInsertTextFormat(InsertTextFormat.Snippet)
+            val parsed = SigParser.parse(sig).stripImplicit
+            val snippet = SigParser.snippet(parsed)
+            item.setInsertText(snippet)
 
-          // TODO remove the dot when it's symbolic
+            if (parsed.isInfix) {
+              // infix operators replace the dot with a space
+              val edit = new TextEdit(new Range(before, pos), " ")
+              item.setAdditionalTextEdits(List(edit).asJava)
+            }
 
-          val snippet = SigParser.snippet(SigParser.parse(sig).stripImplicit)
-          item.setInsertText(snippet)
-          item
+            item
+          }
         }
 
-        // TODO insert/replace stuff
         LspEither.forRight(new CompletionList(completions.asJava))
       }
     }
 
     override def hover(params: HoverParams): CompletableFuture[Hover] = async {
-      withDoc(params.getTextDocument.getUri()) { f =>
+      withDoc(params.getTextDocument.getUri) { f =>
         val output = ensime("type", f, params.getPosition)
         val content = new MarkupContent("plaintext", output)
         new Hover(content)
       }
     }
+
+    override def definition(params: DefinitionParams) = async {
+      withDoc(params.getTextDocument.getUri) { f =>
+
+        val defns = ensime("source", f, params.getPosition).split("\n").toList.map { resp =>
+          val parts = resp.split(":")
+          val file = if (parts(0).isEmpty) f.toString else parts(0).replace(tmp_prefix, "")
+          val pos = new Position(0 max (parts(1).toInt - 1), 0)
+          val range = new Range(pos, pos)
+
+          // TODO these are unsupported by LSP clients by default so require some client side work
+          val cleaned =
+            if (file.contains(".zip!")) s"zip:file://$file"
+            else if (file.contains(".jar!")) s"jar:file://$file"
+            else s"file://$file"
+          // System.err.println(s"FOUND $cleaned")
+
+          new Location(cleaned, range)
+        }
+
+        LspEither.forLeft(defns.asJava)
+      }
+    }
+
   }
 
   override def getWorkspaceService(): WorkspaceService = new WorkspaceService {

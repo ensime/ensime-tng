@@ -4,7 +4,7 @@ package ensime
 
 import java.io.{ File, PrintStream }
 import java.net.URI
-import java.nio.file.{ Files, Path, Paths, FileSystems }
+import java.nio.file.{ Files, Path, Paths, FileSystem, FileSystems, FileSystemAlreadyExistsException }
 import java.util.concurrent.Executors
 import java.util.{ Timer, TimerTask }
 import java.util.regex.Pattern
@@ -281,9 +281,15 @@ object Main {
 
   def withJarFileSystem[A](jar: URI)(f: Path => A): A = {
     val env = new java.util.HashMap[String, Any]
-    val fs = FileSystems.newFileSystem(URI.create("jar:" + jar.toString), env, null)
-    try f(fs.getRootDirectories.asScala.toList.head)
-    finally fs.close()
+    val uri = URI.create("jar:" + jar.toString)
+    val fs =
+      try FileSystems.newFileSystem(uri, env, null)
+      catch {
+        case _: FileSystemAlreadyExistsException => FileSystems.getFileSystem(uri)
+      }
+    f(fs.getRootDirectories.asScala.toList.head)
+    // we don't close the filesystem because it can be accessed again
+    // concurrently and we have no simple way of tracking that
   }
 }
 
