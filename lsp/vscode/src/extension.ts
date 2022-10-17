@@ -15,7 +15,6 @@ export function activate(context: vscode.ExtensionContext) {
 	const debugArgs: string[] = runArgs;
 	const javaPath = "java" ;
 
-        // TODO custom uri support for jar/zip definitions
         // TODO allow the user to specify the java command
         // TODO allow the user to specify the ensime jar
         // TODO some UX to tell the user if the jar (or compiler plugin dir) is missing

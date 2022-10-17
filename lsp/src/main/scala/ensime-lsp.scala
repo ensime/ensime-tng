@@ -2,9 +2,11 @@ package ensime
 
 import java.io.File
 import java.net.URI
-import java.nio.file.Files
+import java.nio.file.{ Files, Path }
 import java.nio.file.StandardOpenOption.{ CREATE, TRUNCATE_EXISTING }
+import java.nio.file.StandardCopyOption.REPLACE_EXISTING
 import java.util.concurrent.CompletableFuture
+import java.util.zip.ZipFile
 
 import scala.concurrent.Future
 import scala.jdk.FutureConverters._
@@ -243,10 +245,8 @@ class EnsimeLsp extends LanguageServer with LanguageClientAware {
           val pos = new Position(0 max (parts(1).toInt - 1), 0)
           val range = new Range(pos, pos)
 
-          // TODO these are unsupported by LSP clients by default so require some client side work
           val cleaned =
-            if (file.contains(".zip!")) s"zip:file://$file"
-            else if (file.contains(".jar!")) s"jar:file://$file"
+            if (file.contains("!")) extractZipEntry(file)
             else s"file://$file"
           // System.err.println(s"FOUND $cleaned")
 
@@ -257,6 +257,26 @@ class EnsimeLsp extends LanguageServer with LanguageClientAware {
       }
     }
 
+    // given an ensime style entry "/foo/bar.jar!/baz/gaz.scala" extract the
+    // entry into the tmp directory and return a File path to that entry for a
+    // text editor to open naturally.
+    private def extractZipEntry(uri: String): String = {
+      val parts = uri.split("!")
+      val name = parts(0)
+      val archive = new ZipFile(name)
+      val path = parts(1).stripPrefix("/")
+      val out = Path.of(tmp_prefix + name + "/" + path)
+      out.getParent().toFile().mkdirs()
+      // System.err.println(s"EXTRACTING $uri to $out")
+      try {
+        val entry = archive.getEntry(path) // recently checked, shouldn't be null
+        val in = archive.getInputStream(entry)
+        Files.copy(in, out, REPLACE_EXISTING)
+        out.toString
+      } finally {
+        archive.close()
+      }
+    }
   }
 
   override def getWorkspaceService(): WorkspaceService = new WorkspaceService {
