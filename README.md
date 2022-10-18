@@ -15,6 +15,8 @@ The feature set is constrained to allow the codebase to be lean and maintainable
 
 # Installation
 
+## Server
+
 If upgrading, always delete old versions of ENSIME first
 
 ```
@@ -25,9 +27,10 @@ Then install the latest version with
 
 ```
 sbt +install
+sbt lsp/install
 ```
 
-from this directory and then choose to use LSP with a text editor of your choice, or an optimised Emacs-specific mode.
+from this directory and then install the extension for the text editor of your choice.
 
 You may need to install additional builds for specific versions of the compiler for projects (and their project definitions) that are using an older version of the compiler, e.g.
 
@@ -35,35 +38,11 @@ You may need to install additional builds for specific versions of the compiler 
 sbt ++2.12.15! install
 ```
 
-## LSP
+## Text Editor
 
-### Server
+### Emacs
 
-Type
-
-```
-sbt lsp/install
-```
-
-from this directory and then setup the LSP for your editor.
-
-### Client
-
-#### VSCode
-
-You must compile the LSP client for VSCode, which will require installing npm and typescript.
-
-```
-cd lsp/vscode
-npm install
-npm run package
-```
-
-Then, in VSCode, go to the Extension manager and "Install from VSIX", choosing the `.vsix` file that you just built.
-
-## Emacs
-
-Install the Emacs mode when enabling `scala-mode` and add your keybindings, e.g.
+Install the `ensime-mode` when enabling `scala-mode` and add your keybindings, e.g.
 
 ```lisp
 (use-package ensime-mode
@@ -81,6 +60,26 @@ Install the Emacs mode when enabling `scala-mode` and add your keybindings, e.g.
 ```
 
 Further steps will be provided when you start using it.
+
+### VSCode
+
+You must compile the LSP client for VSCode, which will require installing npm and typescript.
+
+```
+cd lsp/vscode
+npm install
+npm run package
+```
+
+Then, in VSCode, go to the Extension manager and "Install from VSIX", choosing the `.vsix` file that you just built.
+
+### NeoVim
+
+Copy the file from the `nvim` subdirectory to wherever extensions are supposed to go in your home directory.
+
+### Sublime
+
+TODO https://github.com/sublimelsp/LSP
 
 # Contributing
 
