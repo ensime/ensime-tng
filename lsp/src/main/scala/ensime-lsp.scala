@@ -80,6 +80,10 @@ class EnsimeLsp extends LanguageServer with LanguageClientAware {
       new CompletionOptions(false, List(".").asJava)
     )
 
+    capabilities.setCodeActionProvider(
+      new CodeActionOptions(List("ensime.import").asJava)
+    )
+
     val serverinfo = new ServerInfo
     serverinfo.setName("ENSIME")
     serverinfo.setVersion("TNG")
@@ -297,6 +301,21 @@ class EnsimeLsp extends LanguageServer with LanguageClientAware {
         archive.close()
       }
     }
+
+
+    // FIXME should be executeCommand
+    override def codeAction(params: CodeActionParams) = async {
+      withDoc(params.getTextDocument.getUri) { f =>
+        val pos = params.getRange.getStart
+        System.err.println(s"ACTION ${params.getContext.getTriggerKind} $f $pos")
+
+        null
+//        List(LspEither.forLeft[Command, CodeAction](new Command("Import symbol", "ensime.importsym"))).asJava
+      }
+    }
+
+    // resolveCodeAction(CodeAction unresolved)
+
   }
 
   override def getWorkspaceService(): WorkspaceService = new WorkspaceService {

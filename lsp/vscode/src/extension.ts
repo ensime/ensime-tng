@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import {
+        ExecuteCommandRequest,
 	LanguageClient,
 	LanguageClientOptions,
 	RevealOutputChannelOn,
@@ -37,6 +38,22 @@ export function activate(context: vscode.ExtensionContext) {
 		serverOptions,
 		clientOptions
 	);
+
+        vscode.commands.registerTextEditorCommand(
+          `ensime.import`,
+          (textEditor: vscode.TextEditor, edit: vscode.TextEditorEdit, args: any[]) => {
+            client.sendRequest(ExecuteCommandRequest.type, {
+              command: `ensime.import`
+            });
+          }
+        );
+
+// TODO do we need to send the uri and position or is it included already?
+//  const pos = editor.selection.active;
+//  return {
+//    textDocument: { uri: editor.document.uri.toString() },
+//    position: { line: pos.line, character: pos.character },
+//  };
 
 	client.start();
 }
