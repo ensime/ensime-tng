@@ -23,12 +23,12 @@ import Compiler._
 
 object Main {
 
-  private var heartbeat_ = System.currentTimeMillis()
-  private var shutdowner = false
+  @volatile private var heartbeat_ = System.currentTimeMillis()
+  @volatile private var shutdowner = false
   private def heartbeat(ng: NGServer): Unit = synchronized {
     heartbeat_ = System.currentTimeMillis()
 
-    val timeout = 60 * 60 * 1000
+    val timeout = 60 * 60 * 1000L
     if (!shutdowner) {
       shutdowner = true
       val checker = new TimerTask {

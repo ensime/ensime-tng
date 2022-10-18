@@ -5,6 +5,7 @@ import java.net.URI
 import java.nio.file.{ Files, Path }
 import java.nio.file.StandardOpenOption.{ CREATE, TRUNCATE_EXISTING }
 import java.nio.file.StandardCopyOption.REPLACE_EXISTING
+import java.util.{ Timer, TimerTask }
 import java.util.concurrent.CompletableFuture
 import java.util.zip.ZipFile
 
@@ -31,11 +32,32 @@ object EnsimeLsp {
     server.connect(client)
     launcher.startListening()
   }
+
+  // be nice and shut down automatically if the user doesn't talk to us in a while
+  @volatile private var heartbeat_ = System.currentTimeMillis()
+  @volatile private var shutdowner = false
+  private def heartbeat(): Unit = synchronized {
+    heartbeat_ = System.currentTimeMillis()
+
+    val timeout = 60 * 60 * 1000L
+    if (!shutdowner) {
+      shutdowner = true
+      val checker = new TimerTask {
+        def run(): Unit = if (System.currentTimeMillis() > (heartbeat_ + timeout)) {
+          System.err.println("Shutting down ENSIME LSP due to inactivity")
+          sys.exit(0)
+        }
+      }
+      new Timer("shutdowner", true).scheduleAtFixedRate(checker, timeout, 1000)
+    }
+  }
 }
 
 // see https://github.com/eclipse/lsp4j/issues/321 regarding annotations
 class EnsimeLsp extends LanguageServer with LanguageClientAware {
   private def async[A](f: => A): CompletableFuture[A] = {
+    EnsimeLsp.heartbeat()
+
     import scala.concurrent.ExecutionContext.Implicits.global
 
     Future(f).asJava.toCompletableFuture
@@ -47,7 +69,6 @@ class EnsimeLsp extends LanguageServer with LanguageClientAware {
     val capabilities = new ServerCapabilities
 
     // - TODO import / search for class (unknown which LSP endpoint this is, possibly code action)
-    // - TODO signatureHelp show the symbol name and type on '(' trigger
 
     // this is inefficient, consider swapping to Incremental and applying diffs
     // as they are received by didChange.
@@ -55,7 +76,6 @@ class EnsimeLsp extends LanguageServer with LanguageClientAware {
 
     capabilities.setHoverProvider(true)
     capabilities.setDefinitionProvider(true)
-
     capabilities.setCompletionProvider(
       new CompletionOptions(false, List(".").asJava)
     )
