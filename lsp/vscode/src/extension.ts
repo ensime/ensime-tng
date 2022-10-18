@@ -16,10 +16,8 @@ export function activate(context: vscode.ExtensionContext) {
 	const javaPath = "java" ;
 
         // TODO allow the user to specify the java command
-        // TODO allow the user to specify the ensime jar
-        // TODO some UX to tell the user if the jar (or compiler plugin dir) is missing
-        // TODO bundle the ensime jar by default
-        // TODO add an icon
+        // TODO some UX to tell the user if jars are missing
+        // TODO graphical icon
         // TODO publish to the extension store
 
 	const serverOptions: ServerOptions = {
