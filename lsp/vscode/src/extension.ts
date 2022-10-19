@@ -39,21 +39,15 @@ export function activate(context: vscode.ExtensionContext) {
 		clientOptions
 	);
 
-        vscode.commands.registerTextEditorCommand(
-          `ensime.import`,
-          (textEditor: vscode.TextEditor, edit: vscode.TextEditorEdit, args: any[]) => {
-            client.sendRequest(ExecuteCommandRequest.type, {
-              command: `ensime.import`
-            });
-          }
-        );
-
-// TODO do we need to send the uri and position or is it included already?
-//  const pos = editor.selection.active;
-//  return {
-//    textDocument: { uri: editor.document.uri.toString() },
-//    position: { line: pos.line, character: pos.character },
-//  };
+	vscode.commands.registerTextEditorCommand(
+		`ensime.import`,
+		(editor: vscode.TextEditor, edit: vscode.TextEditorEdit, args: any[]) => {
+			client.sendRequest(ExecuteCommandRequest.type, {
+				command: `ensime.import`,
+				arguments: [editor.document.uri.toString(), editor.selection.active.line, editor.selection.active.character]
+			});
+		}
+	);
 
 	client.start();
 }

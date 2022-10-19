@@ -68,8 +68,6 @@ class EnsimeLsp extends LanguageServer with LanguageClientAware {
 
     val capabilities = new ServerCapabilities
 
-    // - TODO import / search for class (unknown which LSP endpoint this is, possibly code action)
-
     // this is inefficient, consider swapping to Incremental and applying diffs
     // as they are received by didChange.
     capabilities.setTextDocumentSync(TextDocumentSyncKind.Full)
@@ -78,10 +76,6 @@ class EnsimeLsp extends LanguageServer with LanguageClientAware {
     capabilities.setDefinitionProvider(true)
     capabilities.setCompletionProvider(
       new CompletionOptions(false, List(".").asJava)
-    )
-
-    capabilities.setCodeActionProvider(
-      new CodeActionOptions(List("ensime.import").asJava)
     )
 
     val serverinfo = new ServerInfo
@@ -107,6 +101,7 @@ class EnsimeLsp extends LanguageServer with LanguageClientAware {
       None
   }
 
+  // TODO this shouldn't be a resource callback, just a regular function will do
   private def withDoc[A](uri: String)(f: File => A): A = uriToFile(uri) match {
     case Some(file) => f(file)
     case None => throw new UnsupportedOperationException(s"${uri} is not a file")
@@ -179,7 +174,10 @@ class EnsimeLsp extends LanguageServer with LanguageClientAware {
     }
   }
 
-  private def ensime(mode: String, f: File, pos: Position): String = {
+  private def ensime(mode: String, f: File, pos: Position): String =
+    ensime(mode, f, s"${pos.getLine}:${pos.getCharacter}", true)
+
+  private def ensime(mode: String, f: File, args: String, includeTarget: Boolean): String = {
     val exe = ensimeExe(f)
     val target = tmpIfDifferent(f)
     val active = activeSet(f).map(tmpIfDifferent(_))
@@ -188,7 +186,8 @@ class EnsimeLsp extends LanguageServer with LanguageClientAware {
     val stderr = new StringBuilder
     val processLogger = ProcessLogger(_ => (), stderr.append(_))
 
-    val command = s"$exe $mode $target ${pos.getLine}:${pos.getCharacter} $context"
+    val params = if (includeTarget) s"$target " else ""
+    val command = s"$exe $mode $params$args $context"
     System.err.println(command)
 
     try command.!!
@@ -196,6 +195,26 @@ class EnsimeLsp extends LanguageServer with LanguageClientAware {
       if (stderr.nonEmpty)
         System.err.println(stderr.toString)
     }
+  }
+
+  private def tokenAtPoint(txt: String, pos: Position): String = {
+    val line = txt.split("\n")(pos.getLine)
+
+    val buf = new StringBuilder
+
+    var i = pos.getCharacter - 1
+    while (i >= 0 && line(i).isLetter) {
+      buf.append(line(i))
+      i -= 1
+    }
+    buf.reverseInPlace()
+    i = pos.getCharacter
+    while (i < line.length && line(i).isLetter) {
+      buf.append(line(i))
+      i += 1
+    }
+
+    buf.toString
   }
 
   override def getTextDocumentService(): TextDocumentService = new TextDocumentService {
@@ -301,27 +320,47 @@ class EnsimeLsp extends LanguageServer with LanguageClientAware {
         archive.close()
       }
     }
-
-
-    // FIXME should be executeCommand
-    override def codeAction(params: CodeActionParams) = async {
-      withDoc(params.getTextDocument.getUri) { f =>
-        val pos = params.getRange.getStart
-        System.err.println(s"ACTION ${params.getContext.getTriggerKind} $f $pos")
-
-        null
-//        List(LspEither.forLeft[Command, CodeAction](new Command("Import symbol", "ensime.importsym"))).asJava
-      }
-    }
-
-    // resolveCodeAction(CodeAction unresolved)
-
   }
 
   override def getWorkspaceService(): WorkspaceService = new WorkspaceService {
     // ignore client notifications, ensime does it's own monitoring
     def didChangeConfiguration(p: DidChangeConfigurationParams): Unit = ()
     def didChangeWatchedFiles(p: DidChangeWatchedFilesParams): Unit = ()
+
+    override def executeCommand(params: ExecuteCommandParams): CompletableFuture[Object] = params.getCommand match {
+      case "ensime.import" => async {
+        val args = params.getArguments.asScala.map(_.toString)
+        val uri = args(0).stripPrefix("\"").stripSuffix("\"")
+        val pos = new Position(args(1).toInt, args(2).toInt)
+
+        withDoc(uri) { f =>
+          val token = tokenAtPoint(openFiles(f), pos)
+          if (token.isEmpty) return null
+
+          val results = ensime("search", f, token, false).split("\n").toList
+          // System.err.println(results)
+
+          // if there is only one result we could apply it without the
+          // roundtrip, but at least this requires the user to confirm the
+          // action in a consistent way.
+
+          val question = new ShowMessageRequestParams
+          question.setMessage("Import as")
+          question.setType(MessageType.Info)
+          question.setActions(results.map(new MessageActionItem(_)).asJava)
+
+          client.showMessageRequest(question).thenApply { choice =>
+            // FIXME respond to the user choice with a TextEdit
+            System.err.println(s"CHOICE $choice")
+          }
+
+          null
+        }
+      }
+
+      case _ => null
+    }
+
   }
 
   override def getNotebookDocumentService(): NotebookDocumentService = new NotebookDocumentService {
@@ -336,5 +375,8 @@ class EnsimeLsp extends LanguageServer with LanguageClientAware {
 
   // recommended by
   // https://github.com/eclipse/lsp4j/blob/main/documentation/README.md
-  override def connect(client: LanguageClient): Unit = ()
+  override def connect(client: LanguageClient): Unit = {
+    this.client = client
+  }
+  @volatile private var client: LanguageClient = _
 }
