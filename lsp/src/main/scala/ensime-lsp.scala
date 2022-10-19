@@ -343,15 +343,26 @@ class EnsimeLsp extends LanguageServer with LanguageClientAware {
           // if there is only one result we could apply it without the
           // roundtrip, but at least this requires the user to confirm the
           // action in a consistent way.
-
           val question = new ShowMessageRequestParams
           question.setMessage("Import as")
           question.setType(MessageType.Info)
           question.setActions(results.map(new MessageActionItem(_)).asJava)
 
           client.showMessageRequest(question).thenApply { choice =>
-            // FIXME respond to the user choice with a TextEdit
-            System.err.println(s"CHOICE $choice")
+            val content = openFiles(f).split("\n")
+
+            val pkg = content.indexWhere(_.startsWith("package "))
+            val imports = content.indexWhere(_.startsWith("import "))
+
+            // could be more pedantic about where we put the import
+            val insert = if (imports > 0) imports else pkg + 1
+
+            val p = new Position(insert, 0)
+            val r = new Range(p, p)
+
+            val edit = new WorkspaceEdit()
+            edit.setChanges(Map(uri -> List(new TextEdit(r, s"import ${choice.getTitle}\n")).asJava).asJava)
+            client.applyEdit(new ApplyWorkspaceEditParams(edit, "ensime.import"))
           }
 
           null
