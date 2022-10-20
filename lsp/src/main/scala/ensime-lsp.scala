@@ -5,7 +5,7 @@ import java.net.URI
 import java.nio.file.{ Files, Path }
 import java.nio.file.StandardOpenOption.{ CREATE, TRUNCATE_EXISTING }
 import java.nio.file.StandardCopyOption.REPLACE_EXISTING
-import java.util.{ Timer, TimerTask }
+import java.util.{ List => JList, Timer, TimerTask }
 import java.util.concurrent.CompletableFuture
 import java.util.zip.ZipFile
 
@@ -13,6 +13,7 @@ import scala.concurrent.Future
 import scala.jdk.FutureConverters._
 import scala.jdk.CollectionConverters._
 import scala.sys.process._
+import scala.util.control.NonFatal
 
 import org.eclipse.lsp4j._
 import org.eclipse.lsp4j.launch.LSPLauncher
@@ -21,7 +22,6 @@ import org.eclipse.lsp4j.jsonrpc.Launcher
 import org.eclipse.lsp4j.jsonrpc.messages.{ Either => LspEither }
 import org.eclipse.lsp4j.jsonrpc.services._
 
-import java.util.{ List => JList }
 
 object EnsimeLsp {
   def main(args: Array[String]): Unit = {
@@ -286,9 +286,9 @@ class EnsimeLsp extends LanguageServer with LanguageClientAware {
       new Hover(content)
     }
 
-    override def definition(params: DefinitionParams) = async {
+    override def definition(params: DefinitionParams): CompletableFuture[LspEither[JList[_ <: Location], JList[_ <: LocationLink]]] = async {
       val f = uriToFile_(params.getTextDocument.getUri)
-      ensime("source", f, params.getPosition)
+      val output = ensime("source", f, params.getPosition)
       if (output eq null) return null
       val defns = output.split("\n").toList.map { resp =>
         val parts = resp.split(":")
