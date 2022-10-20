@@ -61,17 +61,17 @@ Install the `ensime-mode` when enabling `scala-mode` and add your keybindings, e
 
 ### VSCode
 
-You must compile the LSP client for VSCode, which will require installing npm and typescript.
+Go to the Extension manager and "Install from VSIX", choosing the ENSIME `.vsix` file.
+
+You may wish to bind the custom command "Import Symbol" to a hotkey.
+
+VSIX files are made available at https://ensime.github.io/ but if you want to build from source then use:
 
 ```
 cd lsp/vscode
 npm install
 npm run package
 ```
-
-Then, in VSCode, go to the Extension manager and "Install from VSIX", choosing the `.vsix` file that you just built.
-
-You may wish to bind the custom command "Import Symbol" to a hotkey.
 
 ### NeoVim
 
