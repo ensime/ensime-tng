@@ -73,6 +73,8 @@ npm run package
 
 Then, in VSCode, go to the Extension manager and "Install from VSIX", choosing the `.vsix` file that you just built.
 
+You may wish to bind the custom command "Import Symbol" to a hotkey.
+
 ### NeoVim
 
 Copy the file from the `nvim` subdirectory to wherever extensions are supposed to go in your home directory.
