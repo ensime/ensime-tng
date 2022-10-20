@@ -57,6 +57,29 @@
         "command": "ensime.import",
         "title": "Import symbol"
       }
+    ],
+    "configuration": [
+      {
+        "title": "ENSIME",
+        "properties": {
+          "ensime.java": {
+            "type": "string",
+            "default": "java",
+            "description": "Location of the `java` binary."
+          },
+          "ensime.javaargs": {
+            "type": "string",
+            "default": "-XX:+ShrinkHeapInSteps",
+            "description": "Arguments to pass to the `java` binary."
+          },
+          "ensime.lspjar": {
+            "type": "string",
+            "default": "~/.cache/ensime/lib/ensime-lsp.jar",
+            "description": "Location of the `ensime-lsp.jar` binary (~ expanded to home directory)."
+          }
+        }
+      }
     ]
-  }
+  },
+  "icon": "ensime.png"
 }
