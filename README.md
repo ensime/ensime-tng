@@ -89,7 +89,7 @@ When building and installing the compiler plugin, we took the liberty of install
 
 ### Mill
 
-TODO mill support has not been implemented, a contribution in that area would be welcome.
+TODO https://github.com/com-lihaoyi/mill/discussions/2075
 
 # Known Issues
 
