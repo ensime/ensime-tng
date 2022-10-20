@@ -190,7 +190,10 @@ class EnsimeLsp extends LanguageServer with LanguageClientAware {
     System.err.println(command)
 
     try command.!!
-    finally {
+    catch {
+      // usually just means the file is uncompilable, which can be normal
+      case NonFatal(_) => return null
+    } finally {
       if (stderr.nonEmpty)
         System.err.println(stderr.toString)
     }
@@ -250,7 +253,9 @@ class EnsimeLsp extends LanguageServer with LanguageClientAware {
       val completions = if (charBefore != '.') {
         Nil
       } else {
-        ensime("complete", f, pos).split("\n").toList.map { sig =>
+        val output = ensime("complete", f, pos)
+        if (output eq null) return null
+        output.split("\n").toList.map { sig =>
           val item = new CompletionItem
           item.setLabel(sig)
           item.setInsertTextFormat(InsertTextFormat.Snippet)
@@ -276,13 +281,16 @@ class EnsimeLsp extends LanguageServer with LanguageClientAware {
     override def hover(params: HoverParams): CompletableFuture[Hover] = async {
       val f = uriToFile_(params.getTextDocument.getUri)
       val output = ensime("type", f, params.getPosition)
+      if (output eq null) return null
       val content = new MarkupContent("plaintext", output)
       new Hover(content)
     }
 
     override def definition(params: DefinitionParams) = async {
       val f = uriToFile_(params.getTextDocument.getUri)
-      val defns = ensime("source", f, params.getPosition).split("\n").toList.map { resp =>
+      ensime("source", f, params.getPosition)
+      if (output eq null) return null
+      val defns = output.split("\n").toList.map { resp =>
         val parts = resp.split(":")
         val file = if (parts(0).isEmpty) f.toString else parts(0).replace(tmp_prefix, "")
         val pos = new Position(0 max (parts(1).toInt - 1), 0)
@@ -336,8 +344,10 @@ class EnsimeLsp extends LanguageServer with LanguageClientAware {
         val token = tokenAtPoint(openFiles(f), pos)
         if (token.isEmpty) return null
 
-        val results = ensime("search", f, token, false).split("\n").toList
-        // System.err.println(results)
+        val output = ensime("search", f, token, false)
+        if (output eq null) return null
+        val results = output.split("\n").toList
+        System.err.println(results)
 
         // if there is only one result we could apply it without the
         // roundtrip, but at least this requires the user to confirm the

@@ -19,8 +19,12 @@ export function activate(context: vscode.ExtensionContext) {
 	const ensime_lspjar = vscode.workspace.getConfiguration().get<string>('ensime.lspjar')?.replace("~", os.homedir) || "";
 	const runArgs: string[] = ensime_javaargs.split(" ").concat(["-jar", ensime_lspjar]);
 
-    if (!fs.existsSync(ensime_lspjar)) {
+	if (!fs.existsSync(ensime_lspjar)) {
 		vscode.window.showErrorMessage(`ENSIME: not available (${ensime_lspjar}). Visit https://ensime.github.io/ to download and install.`);
+	}
+
+	if (!fs.existsSync("~/.cache/ensime/~".replace("~", os.homedir).replace("~", os.homedir))) {
+		vscode.window.showInformationMessage("Welcome to ENSIME! Reload your projects after installing the ENSIME plugins, and compile at least once.");
 	}
 
 	const serverOptions: ServerOptions = {
