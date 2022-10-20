@@ -101,9 +101,8 @@ class EnsimeLsp extends LanguageServer with LanguageClientAware {
       None
   }
 
-  // TODO this shouldn't be a resource callback, just a regular function will do
-  private def withDoc[A](uri: String)(f: File => A): A = uriToFile(uri) match {
-    case Some(file) => f(file)
+  private def uriToFile_[A](uri: String): File = uriToFile(uri) match {
+    case Some(file) => file
     case None => throw new UnsupportedOperationException(s"${uri} is not a file")
   }
 
@@ -219,16 +218,19 @@ class EnsimeLsp extends LanguageServer with LanguageClientAware {
 
   override def getTextDocumentService(): TextDocumentService = new TextDocumentService {
     // we only care about monitoring the active set
-    override def didClose(p: DidCloseTextDocumentParams): Unit = withDoc(p.getTextDocument.getUri) { f =>
+    override def didClose(p: DidCloseTextDocumentParams): Unit = {
+      val f = uriToFile_(p.getTextDocument.getUri)
       // System.err.println(s"CLOSED $f")
       openFiles -= f
     }
-    override def didOpen(p: DidOpenTextDocumentParams): Unit = withDoc(p.getTextDocument.getUri) { f =>
+    override def didOpen(p: DidOpenTextDocumentParams): Unit = {
+      val f = uriToFile_(p.getTextDocument.getUri)
       // System.err.println(s"OPENED $f")
       val content = p.getTextDocument.getText
       openFiles = openFiles + (f -> content)
     }
-    override def didChange(p: DidChangeTextDocumentParams): Unit = withDoc(p.getTextDocument.getUri) { f =>
+    override def didChange(p: DidChangeTextDocumentParams): Unit = {
+      val f = uriToFile_(p.getTextDocument.getUri)
       // System.err.println(s"CHANGED $f")
       val content = p.getContentChanges.get(0).getText // Full means this is not a diff
       openFiles = openFiles + (f -> content)
@@ -238,66 +240,63 @@ class EnsimeLsp extends LanguageServer with LanguageClientAware {
 
     // https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_completion
     override def completion(params: CompletionParams): CompletableFuture[LspEither[JList[CompletionItem], CompletionList]] = async {
-      withDoc(params.getTextDocument.getUri) { f =>
-        val pos = params.getPosition
-        // editors can sometimes send completion requests in places other than
-        // the defined trigger characters, so be a little protective against
-        // that.
-        val before = new Position(pos.getLine, pos.getCharacter - 1)
-        val charBefore = openFiles(f).split('\n')(before.getLine)(before.getCharacter)
-        val completions = if (charBefore != '.') {
-          Nil
-        } else {
-          ensime("complete", f, pos).split("\n").toList.map { sig =>
-            val item = new CompletionItem
-            item.setLabel(sig)
-            item.setInsertTextFormat(InsertTextFormat.Snippet)
+      val f = uriToFile_(params.getTextDocument.getUri)
+      val pos = params.getPosition
+      // editors can sometimes send completion requests in places other than
+      // the defined trigger characters, so be a little protective against
+      // that.
+      val before = new Position(pos.getLine, pos.getCharacter - 1)
+      val charBefore = openFiles(f).split('\n')(before.getLine)(before.getCharacter)
+      val completions = if (charBefore != '.') {
+        Nil
+      } else {
+        ensime("complete", f, pos).split("\n").toList.map { sig =>
+          val item = new CompletionItem
+          item.setLabel(sig)
+          item.setInsertTextFormat(InsertTextFormat.Snippet)
 
-            val parsed = SigParser.parse(sig).stripImplicit
-            val snippet = SigParser.snippet(parsed)
-            item.setInsertText(snippet)
+          val parsed = SigParser.parse(sig).stripImplicit
+          val snippet = SigParser.snippet(parsed)
+          item.setInsertText(snippet)
 
-            if (parsed.isInfix) {
-              // infix operators replace the dot with a space
-              val edit = new TextEdit(new Range(before, pos), " ")
-              item.setAdditionalTextEdits(List(edit).asJava)
-            }
-
-            item
+          if (parsed.isInfix) {
+            // infix operators replace the dot with a space
+            val edit = new TextEdit(new Range(before, pos), " ")
+            item.setAdditionalTextEdits(List(edit).asJava)
           }
-        }
 
-        LspEither.forRight(new CompletionList(completions.asJava))
+          item
+        }
       }
+
+      LspEither.forRight(new CompletionList(completions.asJava))
+
     }
 
     override def hover(params: HoverParams): CompletableFuture[Hover] = async {
-      withDoc(params.getTextDocument.getUri) { f =>
-        val output = ensime("type", f, params.getPosition)
-        val content = new MarkupContent("plaintext", output)
-        new Hover(content)
-      }
+      val f = uriToFile_(params.getTextDocument.getUri)
+      val output = ensime("type", f, params.getPosition)
+      val content = new MarkupContent("plaintext", output)
+      new Hover(content)
     }
 
     override def definition(params: DefinitionParams) = async {
-      withDoc(params.getTextDocument.getUri) { f =>
+      val f = uriToFile_(params.getTextDocument.getUri)
+      val defns = ensime("source", f, params.getPosition).split("\n").toList.map { resp =>
+        val parts = resp.split(":")
+        val file = if (parts(0).isEmpty) f.toString else parts(0).replace(tmp_prefix, "")
+        val pos = new Position(0 max (parts(1).toInt - 1), 0)
+        val range = new Range(pos, pos)
 
-        val defns = ensime("source", f, params.getPosition).split("\n").toList.map { resp =>
-          val parts = resp.split(":")
-          val file = if (parts(0).isEmpty) f.toString else parts(0).replace(tmp_prefix, "")
-          val pos = new Position(0 max (parts(1).toInt - 1), 0)
-          val range = new Range(pos, pos)
+        val cleaned =
+          if (file.contains("!")) extractZipEntry(file)
+          else s"file://$file"
+        // System.err.println(s"FOUND $cleaned")
 
-          val cleaned =
-            if (file.contains("!")) extractZipEntry(file)
-            else s"file://$file"
-          // System.err.println(s"FOUND $cleaned")
-
-          new Location(cleaned, range)
-        }
-
-        LspEither.forLeft(defns.asJava)
+        new Location(cleaned, range)
       }
+
+      LspEither.forLeft(defns.asJava)
     }
 
     // given an ensime style entry "/foo/bar.jar!/baz/gaz.scala" extract the
@@ -332,41 +331,41 @@ class EnsimeLsp extends LanguageServer with LanguageClientAware {
         val args = params.getArguments.asScala.map(_.toString)
         val uri = args(0).stripPrefix("\"").stripSuffix("\"")
         val pos = new Position(args(1).toInt, args(2).toInt)
+        val f = uriToFile_(uri)
 
-        withDoc(uri) { f =>
-          val token = tokenAtPoint(openFiles(f), pos)
-          if (token.isEmpty) return null
+        val token = tokenAtPoint(openFiles(f), pos)
+        if (token.isEmpty) return null
 
-          val results = ensime("search", f, token, false).split("\n").toList
-          // System.err.println(results)
+        val results = ensime("search", f, token, false).split("\n").toList
+        // System.err.println(results)
 
-          // if there is only one result we could apply it without the
-          // roundtrip, but at least this requires the user to confirm the
-          // action in a consistent way.
-          val question = new ShowMessageRequestParams
-          question.setMessage("Import as")
-          question.setType(MessageType.Info)
-          question.setActions(results.map(new MessageActionItem(_)).asJava)
+        // if there is only one result we could apply it without the
+        // roundtrip, but at least this requires the user to confirm the
+        // action in a consistent way.
+        val question = new ShowMessageRequestParams
+        question.setMessage("Import as")
+        question.setType(MessageType.Info)
+        question.setActions(results.map(new MessageActionItem(_)).asJava)
 
-          client.showMessageRequest(question).thenApply { choice =>
-            val content = openFiles(f).split("\n")
+        client.showMessageRequest(question).thenApply { choice =>
+          val content = openFiles(f).split("\n")
 
-            val pkg = content.indexWhere(_.startsWith("package "))
-            val imports = content.indexWhere(_.startsWith("import "))
+          val pkg = content.indexWhere(_.startsWith("package "))
+          val imports = content.indexWhere(_.startsWith("import "))
 
-            // could be more pedantic about where we put the import
-            val insert = if (imports > 0) imports else pkg + 1
+          // could be more pedantic about where we put the import
+          val insert = if (imports > 0) imports else pkg + 1
 
-            val p = new Position(insert, 0)
-            val r = new Range(p, p)
+          val p = new Position(insert, 0)
+          val r = new Range(p, p)
 
-            val edit = new WorkspaceEdit()
-            edit.setChanges(Map(uri -> List(new TextEdit(r, s"import ${choice.getTitle}\n")).asJava).asJava)
-            client.applyEdit(new ApplyWorkspaceEditParams(edit, "ensime.import"))
-          }
-
-          null
+          val edit = new WorkspaceEdit()
+          edit.setChanges(Map(uri -> List(new TextEdit(r, s"import ${choice.getTitle}\n")).asJava).asJava)
+          client.applyEdit(new ApplyWorkspaceEditParams(edit, "ensime.import"))
         }
+
+        null
+
       }
 
       case _ => null
