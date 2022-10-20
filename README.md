@@ -59,8 +59,6 @@ Install the `ensime-mode` when enabling `scala-mode` and add your keybindings, e
 (add-hook 'scala-mode-hook #'ensime-mode)
 ```
 
-Further steps will be provided when you start using it.
-
 ### VSCode
 
 You must compile the LSP client for VSCode, which will require installing npm and typescript.
@@ -83,13 +81,31 @@ Copy the file from the `nvim` subdirectory to wherever extensions are supposed t
 
 TODO https://github.com/sublimelsp/LSP
 
+## Build Tools
+
+### SBT
+
+When building and installing the compiler plugin, we took the liberty of installing an sbt plugin for you.
+
+### Mill
+
+TODO mill support has not been implemented, a contribution in that area would be welcome.
+
+# Known Issues
+
+Only tested on GNU/Linux, and to a lesser extent MacOS. Windows almost certainly needs additional support.
+
+ScalaJS and Scala Native do not have any special handling and your mileage may vary.
+
+The Scala 3 compiler regresses many behaviours and features may be degraded, e.g. completions for extension methods might include erroneous extra parameters.
+
 # Contributing
 
 ENSIME is an invite-only project for hobbyists who write tooling to make their lives a little bit more joyful.
 
-If you have access to the repository, you are requested not to share it publicly.
+If you have access to the repository, you are requested not to share the commit history publicly.
 
-Public snapshot releases may appear on https://ensime.github.io/, at the discretion of the authors.
+Public snapshot releases may appear on https://ensime.github.io/, at the discretion of the authors, which may be shared freely.
 
 # Design
 
