@@ -131,6 +131,10 @@ For every output directory a file is written into the cache containing the list 
 
 The most important tests are end-to-end regression tests. Example projects are compiled, and a series of scripted user interactions are performed on them. The output for each action is persisted as a test assertion and variations from this baseline are failures.
 
+## LSP
+
+For editors that cannot invoke the launcher directly, an LSP wrapper is provided which will do this for them. It is written in Scala but could have been written in any language. Only a single LSP is needed to service all open projects since the launcher is managing all of that, however the LSP server does need to be stateful to keep track of the open list of files and their in-memory edits.
+
 ## Features
 
 ### Completion at Point
