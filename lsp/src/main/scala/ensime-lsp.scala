@@ -353,7 +353,9 @@ class EnsimeLsp extends LanguageServer with LanguageClientAware {
           val pkg = content.indexWhere(_.startsWith("package "))
           val imports = content.indexWhere(_.startsWith("import "))
 
-          // could be more pedantic about where we put the import
+          // could be more pedantic about where we put the import, but it's a
+          // lot simpler to just require the user to organise their imports
+          // regularly (or automatically).
           val insert = if (imports > 0) imports else pkg + 1
 
           val p = new Position(insert, 0)
@@ -365,7 +367,6 @@ class EnsimeLsp extends LanguageServer with LanguageClientAware {
         }
 
         null
-
       }
 
       case _ => null
