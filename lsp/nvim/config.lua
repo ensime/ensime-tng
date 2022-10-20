@@ -2,6 +2,8 @@
 local configs = require 'lspconfig.configs'
 local lspconfig = require 'lspconfig'
 
+-- TODO add the "ensime.import uri line column" action
+
 -- Check if the config is already defined (useful when reloading this file)
 if not configs.ensime then
   configs.ensime = {
