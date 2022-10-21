@@ -24,8 +24,10 @@ export function activate(context: vscode.ExtensionContext) {
 	}
 
 	if (!fs.existsSync("~/.cache/ensime/~".replace("~", os.homedir).replace("~", os.homedir))) {
-		vscode.window.showInformationMessage("Welcome to ENSIME! Reload your projects after installing the ENSIME plugins, and compile at least once. Consider adding a key binding for the 'Import Symbol' command.");
+		vscode.window.showInformationMessage("Welcome to ENSIME! Reload your projects after installing the ENSIME plugins, and compile at least once.");
 	}
+
+	// TODO popup if there is no binding for Import Symbol, to remind the user to bind it.
 
 	const serverOptions: ServerOptions = {
 		run: { command: ensime_java, transport: TransportKind.stdio, args: runArgs },

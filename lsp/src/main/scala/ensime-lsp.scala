@@ -33,6 +33,8 @@ object EnsimeLsp {
     launcher.startListening()
   }
 
+  // TODO automatically restart if the LSP jar file changed (upgrade UX)
+
   // be nice and shut down automatically if the user doesn't talk to us in a while
   @volatile private var heartbeat_ = System.currentTimeMillis()
   @volatile private var shutdowner = false
@@ -292,6 +294,11 @@ class EnsimeLsp extends LanguageServer with LanguageClientAware {
       if (output eq null) return null
       val defns = output.split("\n").toList.map { resp =>
         val parts = resp.split(":")
+        if (parts.length != 2) {
+          // debug why and when this happens... seen in the wild
+          System.err.println(s"ENSIME unexpected response $resp")
+          return null
+        }
         val file = if (parts(0).isEmpty) f.toString else parts(0).replace(tmp_prefix, "")
         val pos = new Position(0 max (parts(1).toInt - 1), 0)
         val range = new Range(pos, pos)
