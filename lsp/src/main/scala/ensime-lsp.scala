@@ -295,7 +295,7 @@ class EnsimeLsp extends LanguageServer with LanguageClientAware {
       val defns = output.split("\n").toList.map { resp =>
         val parts = resp.split(":")
         if (parts.length != 2) {
-          // debug why and when this happens... seen in the wild
+          // debug why and when this happens... seen in the wild (scala.runtime.NonLocalReturnControl)
           System.err.println(s"ENSIME unexpected response $resp")
           return null
         }
