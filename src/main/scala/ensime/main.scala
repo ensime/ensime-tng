@@ -3,6 +3,7 @@
 package ensime
 
 import java.io.{ File, PrintStream }
+import java.lang.management.ManagementFactory
 import java.net.URI
 import java.nio.file.{ Files, Path, Paths, FileSystem, FileSystems, FileSystemAlreadyExistsException }
 import java.util.concurrent.Executors
@@ -23,9 +24,16 @@ import Compiler._
 
 object Main {
 
+  @volatile private var ensimeLauncherJar: File = _
+  @volatile private var ensimeLauncherModified = -1L
   @volatile private var heartbeat_ = System.currentTimeMillis()
   @volatile private var shutdowner = false
   private def heartbeat(ng: NGServer): Unit = synchronized {
+    if (ensimeLauncherModified > 0 && ensimeLauncherJar.exists() && ensimeLauncherJar.lastModified() != ensimeLauncherModified) {
+      System.err.println("ENSIME upgraded, please try again")
+      ng.signalExit()
+    }
+
     heartbeat_ = System.currentTimeMillis()
 
     val timeout = 60 * 60 * 1000L
@@ -34,7 +42,15 @@ object Main {
       val checker = new TimerTask {
         def run(): Unit = if (System.currentTimeMillis() > (heartbeat_ + timeout)) ng.signalExit()
       }
-      new Timer("shutdowner", true).scheduleAtFixedRate(checker, timeout, 30000)
+      new Timer("shutdowner", true).scheduleAtFixedRate(checker, timeout, 30000L)
+    }
+  }
+
+  {
+    val cp = ManagementFactory.getRuntimeMXBean.getClassPath
+    if (cp.endsWith(".jar") && new File(cp).exists()) {
+      ensimeLauncherJar = new File(cp)
+      ensimeLauncherModified = ensimeLauncherJar.lastModified()
     }
   }
 

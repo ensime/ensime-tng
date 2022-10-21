@@ -41,12 +41,9 @@ object EnsimeLsp {
 
     System.err.println(s"Starting ENSIME LSP ($cp) [${args.mkString(" ")}]")
 
-    // TODO port this concept to the launcher
-    // this is the expected way to run the LSP
     if (cp.endsWith(".jar") && new File(cp).exists()) {
       ensimeLspJar = new File(cp)
       ensimeLspModified = ensimeLspJar.lastModified()
-      // System.err.println(s"tracking $cp with timestamp $ensimeLspModified")
     }
 
     val server = new EnsimeLsp
@@ -80,7 +77,7 @@ object EnsimeLsp {
           }
         }
       }
-      new Timer("shutdowner", true).scheduleAtFixedRate(checker, timeout, 30000)
+      new Timer("shutdowner", true).scheduleAtFixedRate(checker, timeout, 30000L)
     }
   }
 }
