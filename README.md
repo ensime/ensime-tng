@@ -38,6 +38,8 @@ You may need to install additional builds for specific versions of the compiler 
 sbt ++2.12.15! install
 ```
 
+To get "jump to source" support for the Java standard library, make sure to install the `src.zip` into `JAVA_HOME/lib/src.zip` for all the JVMs that you are using.
+
 ## Text Editor
 
 ### Emacs
