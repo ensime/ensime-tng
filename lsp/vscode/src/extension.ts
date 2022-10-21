@@ -27,7 +27,7 @@ export function activate(context: vscode.ExtensionContext) {
 		vscode.window.showInformationMessage("Welcome to ENSIME! Reload your projects after installing the ENSIME plugins, and compile at least once.");
 	}
 
-	// TODO popup if there is no binding for Import Symbol, to remind the user to bind it.
+	// would be good to remind the user to add a key binding for Import Symbol if none is set.
 
 	const serverOptions: ServerOptions = {
 		run: { command: ensime_java, transport: TransportKind.stdio, args: runArgs },

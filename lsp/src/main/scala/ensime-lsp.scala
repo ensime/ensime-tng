@@ -1,6 +1,7 @@
 package ensime
 
 import java.io.File
+import java.lang.management.ManagementFactory
 import java.net.URI
 import java.nio.file.{ Files, Path }
 import java.nio.file.StandardOpenOption.{ CREATE, TRUNCATE_EXISTING }
@@ -24,8 +25,30 @@ import org.eclipse.lsp4j.jsonrpc.services._
 
 
 object EnsimeLsp {
+
+  // diagnostics are not supported. If somebody wants to add it, a good design
+  // for that would be to have the compiler plugin (when run in batch mode)
+  // intercept the reporter messages, and tee them into a file. That file could
+  // then be watched by this LSP server and reported back to the text editor.
+  // This would give perfect alignment between the compilation and the
+  // diagnostic messages (not relying on the presentation compiler) but without
+  // the need for an additional diagnostics compile server (such as bloop).
+
   def main(args: Array[String]): Unit = {
-    System.err.println("Starting ENSIME LSP")
+    val runtimeMXBean = ManagementFactory.getRuntimeMXBean()
+    val cp = runtimeMXBean.getClassPath()
+    val args = runtimeMXBean.getInputArguments.asScala
+
+    System.err.println(s"Starting ENSIME LSP ($cp) [${args.mkString(" ")}]")
+
+    // TODO port this concept to the launcher
+    // this is the expected way to run the LSP
+    if (cp.endsWith(".jar") && new File(cp).exists()) {
+      ensimeLspJar = new File(cp)
+      ensimeLspModified = ensimeLspJar.lastModified()
+      // System.err.println(s"tracking $cp with timestamp $ensimeLspModified")
+    }
+
     val server = new EnsimeLsp
     val launcher = LSPLauncher.createServerLauncher(server, System.in, System.out)
     val client = launcher.getRemoteProxy
@@ -33,24 +56,31 @@ object EnsimeLsp {
     launcher.startListening()
   }
 
-  // TODO automatically restart if the LSP jar file changed (upgrade UX)
-
   // be nice and shut down automatically if the user doesn't talk to us in a while
   @volatile private var heartbeat_ = System.currentTimeMillis()
   @volatile private var shutdowner = false
+  @volatile private var ensimeLspJar: File = _
+  @volatile private var ensimeLspModified = -1L
   private def heartbeat(): Unit = synchronized {
+    if (ensimeLspModified > 0 && ensimeLspJar.exists() && ensimeLspJar.lastModified() != ensimeLspModified) {
+      System.err.println("ENSIME LSP upgrade in process")
+      sys.exit(0)
+    }
+
     heartbeat_ = System.currentTimeMillis()
 
     val timeout = 60 * 60 * 1000L
     if (!shutdowner) {
       shutdowner = true
       val checker = new TimerTask {
-        def run(): Unit = if (System.currentTimeMillis() > (heartbeat_ + timeout)) {
-          System.err.println("Shutting down ENSIME LSP due to inactivity")
-          sys.exit(0)
+        def run(): Unit = {
+          if (System.currentTimeMillis() > (heartbeat_ + timeout)) {
+            System.err.println("Shutting down ENSIME LSP due to inactivity")
+            sys.exit(0)
+          }
         }
       }
-      new Timer("shutdowner", true).scheduleAtFixedRate(checker, timeout, 1000)
+      new Timer("shutdowner", true).scheduleAtFixedRate(checker, timeout, 30000)
     }
   }
 }
