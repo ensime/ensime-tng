@@ -87,11 +87,13 @@ TODO https://github.com/sublimelsp/LSP
 
 ### SBT
 
-When building and installing the compiler plugin, we took the liberty of installing an sbt plugin for you.
+When building and installing the compiler plugin, we took the liberty of installing an sbt plugin for you. Everything will be automatic.
 
 ### Mill
 
-TODO https://github.com/com-lihaoyi/mill/discussions/2075
+ENSIME must be installed for every Mill project. Copy the `mill/Ensime.sc` file into the `plugins` folder of your project and follow the instructions in the comments of that file.
+
+Vote or comment on https://github.com/com-lihaoyi/mill/discussions/2075 to get this added to Mill by default.
 
 # Known Issues
 
