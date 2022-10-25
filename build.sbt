@@ -40,7 +40,7 @@ lazy val ensime = (project in file(".")).settings(
 
   libraryDependencies ++= Seq(
     "com.facebook" % "nailgun-server" % "1.0.1",
-    "org.ow2.asm"  % "asm"            % "9.2"
+    "org.ow2.asm"  % "asm"            % "9.4"
   ),
 
   crossTarget := target.value / s"scala-${scalaVersion.value}",
