@@ -5,7 +5,6 @@ package ensime
 import java.io.File
 
 import scala.tools.nsc._
-import scala.tools.nsc.plugins
 
 final class Plugin(override val global: Global) extends plugins.Plugin {
   override val description: String = "extracts build information for use by ENSIME"

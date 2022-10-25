@@ -2,20 +2,17 @@
 // License: GPLv3+
 package ensime
 
-import java.io.File
-import java.io.PrintStream
+import java.io.{ File, PrintStream }
 import java.net.URI
 import java.nio.file.{ Files, Path }
 import java.util.concurrent.atomic.AtomicReference
 
 import scala.annotation._
-import scala.concurrent.ExecutionContext
-import scala.concurrent.Future
-import scala.tools.nsc.Settings
-import scala.tools.nsc.interactive
-import scala.tools.nsc.reporters.Reporter
-import scala.reflect.internal.util.{Position, BatchSourceFile, SourceFile}
+import scala.concurrent.{ ExecutionContext, Future }
+import scala.reflect.internal.util.{ BatchSourceFile, Position, SourceFile }
 import scala.reflect.io.VirtualFile
+import scala.tools.nsc.{ Settings, interactive }
+import scala.tools.nsc.reporters.Reporter
 import scala.tools.util.PathResolver
 
 final class Compiler(

@@ -28,6 +28,7 @@ export function activate(context: vscode.ExtensionContext) {
 	}
 
 	// would be good to remind the user to add a key binding for Import Symbol if none is set.
+        // TODO check if nailgun is installed and recommend if not
 
 	const serverOptions: ServerOptions = {
 		run: { command: ensime_java, transport: TransportKind.stdio, args: runArgs },

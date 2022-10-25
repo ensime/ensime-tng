@@ -6,15 +6,16 @@ import dotty.tools.dotc.CompilationUnit
 import dotty.tools.dotc.ast.Trees._
 import dotty.tools.dotc.config.ScalaSettings
 import dotty.tools.dotc.config.Settings.Setting
-import dotty.tools.dotc.core.Contexts.Context
 import dotty.tools.dotc.core.Mode
+import dotty.tools.dotc.core.Contexts.Context
 import dotty.tools.dotc.parsing.Parser
 import dotty.tools.dotc.plugins.{ PluginPhase, StandardPlugin }
 import dotty.tools.dotc.typer.TyperPhase
 import dotty.tools.io.AbstractFile
 
-import Plugin._
 class Plugin extends StandardPlugin {
+  import Plugin._
+
   override val description: String = "extracts build information for use by ENSIME"
   override val name: String = "ensime"
 

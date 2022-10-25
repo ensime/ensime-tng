@@ -5,21 +5,19 @@ package ensime
 import java.io.{ File, PrintStream }
 import java.lang.management.ManagementFactory
 import java.net.URI
-import java.nio.file.{ Files, Path, Paths, FileSystem, FileSystems, FileSystemAlreadyExistsException }
-import java.util.concurrent.Executors
+import java.nio.file.{ FileSystem, FileSystemAlreadyExistsException, FileSystems, Files, Path, Paths }
 import java.util.{ Timer, TimerTask }
+import java.util.concurrent.Executors
 import java.util.regex.Pattern
 
-import scala.concurrent.Await
-import scala.concurrent.ExecutionContext
-import scala.concurrent.Future
+import scala.concurrent.{ Await, ExecutionContext, Future }
 import scala.concurrent.duration.Duration
 import scala.jdk.CollectionConverters._
 
-import org.objectweb.asm.{ ClassReader, Opcodes, ClassVisitor, FieldVisitor, MethodVisitor, Label }
-
 import com.facebook.nailgun.{ NGContext, NGServer }
+import org.objectweb.asm.{ ClassReader, ClassVisitor, FieldVisitor, Label, MethodVisitor, Opcodes }
 
+// local
 import Compiler._
 
 object Main {

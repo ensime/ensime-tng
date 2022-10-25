@@ -2,11 +2,10 @@
 // License: GPLv3+
 package ensime
 
-import java.nio.file.Files
-import java.nio.file.Path
+import java.io.File
+import java.nio.file.{ Files, Path }
 import java.nio.file.StandardOpenOption.{ APPEND, CREATE, TRUNCATE_EXISTING }
 import java.util.UUID
-import java.io.File
 
 // this is the code responsible for generating the content of the launcher
 // script, which is the primary output of the compiler plugin and a dependency

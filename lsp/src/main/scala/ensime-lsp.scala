@@ -4,25 +4,24 @@ import java.io.File
 import java.lang.management.ManagementFactory
 import java.net.URI
 import java.nio.file.{ Files, Path }
-import java.nio.file.StandardOpenOption.{ CREATE, TRUNCATE_EXISTING }
 import java.nio.file.StandardCopyOption.REPLACE_EXISTING
+import java.nio.file.StandardOpenOption.{ CREATE, TRUNCATE_EXISTING }
 import java.util.{ List => JList, Timer, TimerTask }
 import java.util.concurrent.CompletableFuture
 import java.util.zip.ZipFile
 
 import scala.concurrent.Future
-import scala.jdk.FutureConverters._
 import scala.jdk.CollectionConverters._
+import scala.jdk.FutureConverters._
 import scala.sys.process._
 import scala.util.control.NonFatal
 
 import org.eclipse.lsp4j._
-import org.eclipse.lsp4j.launch.LSPLauncher
-import org.eclipse.lsp4j.services._
 import org.eclipse.lsp4j.jsonrpc.Launcher
 import org.eclipse.lsp4j.jsonrpc.messages.{ Either => LspEither }
 import org.eclipse.lsp4j.jsonrpc.services._
-
+import org.eclipse.lsp4j.launch.LSPLauncher
+import org.eclipse.lsp4j.services._
 
 object EnsimeLsp {
 
@@ -84,6 +83,8 @@ object EnsimeLsp {
 
 // see https://github.com/eclipse/lsp4j/issues/321 regarding annotations
 class EnsimeLsp extends LanguageServer with LanguageClientAware {
+
+  // TODO catch common failure exceptions here for cleaner responses
   private def async[A](f: => A): CompletableFuture[A] = {
     EnsimeLsp.heartbeat()
 
@@ -173,6 +174,7 @@ class EnsimeLsp extends LanguageServer with LanguageClientAware {
       lastEnsimeExe = exe
       exe.get
     } else {
+      // TODO should be a popup
       lastEnsimeExe.getOrElse(throw new IllegalStateException("ENSIME is not available, blah blah instructions to set it up"))
     }
   }

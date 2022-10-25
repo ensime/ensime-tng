@@ -7,17 +7,14 @@ import java.net.URI
 import java.nio.file.{ Files, Path }
 import java.util.concurrent.atomic.AtomicReference
 
-import dotty.tools.dotc.ast.Positioned
-import dotty.tools.dotc.ast.tpd
+import dotty.tools.dotc.ast.{ Positioned, tpd }
 import dotty.tools.dotc.config.{ Feature, PathResolver }
+import dotty.tools.dotc.core.{ MacroClassLoader, Mode, Symbols, TypeErasure }
 import dotty.tools.dotc.core.Contexts.{ Context, ContextBase, FreshContext }
-import dotty.tools.dotc.core.TypeErasure
 import dotty.tools.dotc.core.Flags._
-import dotty.tools.dotc.core.Symbols
 import dotty.tools.dotc.core.Symbols.Symbol
 import dotty.tools.dotc.core.Types.Type
-import dotty.tools.dotc.core.{ MacroClassLoader, Mode }
-import dotty.tools.dotc.interactive.{ Completion, InteractiveCompiler, InteractiveDriver, Interactive, SourceTree }
+import dotty.tools.dotc.interactive.{ Completion, Interactive, InteractiveCompiler, InteractiveDriver, SourceTree }
 import dotty.tools.dotc.interfaces.{ Diagnostic, SimpleReporter }
 import dotty.tools.dotc.reporting.Reporter
 import dotty.tools.dotc.transform.SymUtils._
@@ -26,9 +23,8 @@ import dotty.tools.dotc.typer.ImportInfo
 import dotty.tools.dotc.util.{ SourceFile, SourcePosition, Spans }
 import dotty.tools.io.{ AbstractFile, VirtualFile }
 
-import Compiler._
-
 class Compiler(driver: InteractiveDriver)(implicit ctx: Context) {
+  import Compiler._
   // many thanks to Guillaume Martres for helping to implement this class
 
   // .fullName.show is giving the Java name, not the Scala name we also don't
