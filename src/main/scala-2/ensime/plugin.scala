@@ -69,10 +69,9 @@ final class Plugin(override val global: Global) extends plugins.Plugin {
     //
     // using the tmpdir ties it to the build hash (transient), not the
     // individual files (semi-permanent).
-    // System.err.println(s"ENSIME installing reporter hack over existing ${System.identityHashCode(global.reporter)}")
-    global.reporter = new ReporterHack(global.reporter, new File(tmpdir, "diagnostics.log"))
-    //wobble
-    // System.err.println(s"ENSIME reporter is now ${System.identityHashCode(global.reporter)}")
+
+    // uncomment this line to beta test the hacky diagnostics support
+    // global.reporter = new ReporterHack(global.reporter, new File(tmpdir, "diagnostics.log"))
   }
 
   // `outputDirs.outputs` would have been better, since it contains the source
