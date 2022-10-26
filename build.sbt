@@ -24,7 +24,7 @@ lazy val ensime = (project in file(".")).settings(
     file(s"${dir.getPath}-$major") :: specific
   },
 
-  // scalacOptions += "-deprecation"
+  // scalacOptions += "-deprecation",
   scalacOptions ++= {
     if (scalaVersion.value.startsWith("2.11.")) List("-Xexperimental", "-target:jvm-1.8") else Nil
   },

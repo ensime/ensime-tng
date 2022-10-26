@@ -17,7 +17,6 @@ import scala.jdk.CollectionConverters._
 import com.facebook.nailgun.{ NGContext, NGServer }
 import org.objectweb.asm.{ ClassReader, ClassVisitor, FieldVisitor, Label, MethodVisitor, Opcodes }
 
-// local
 import Compiler._
 
 object Main {

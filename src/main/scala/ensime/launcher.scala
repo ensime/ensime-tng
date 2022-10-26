@@ -13,8 +13,10 @@ import java.util.UUID
 object Launcher {
   val pluginName = "ensime"
   val cacheDir = sys.props("user.home") + "/.cache/ensime/"
+  // TODO add a "launcher" onto the launcher location
+  // TODO add a .sh suffix
 
-  def mkScript(userSettings: List[String]): String = {
+  def mkScript(userSettings: List[String]): (String, File) = {
     val ensimeJar = userSettings.find(_.matches(s"^-Xplugin:.*${pluginName}.*[.]jar$$")).head.stripPrefix("-Xplugin:")
 
     val userName = sys.props("user.name")
@@ -32,10 +34,11 @@ object Launcher {
 
     // could capture envvars behind an allow-list
     var templ = getResourceAsString("ensime/launcher.sh")
+    val tmpdir = s"/tmp/$userName/ensime"
 
     var replacements = Map(
       "__USERDIR__" -> userDir,
-      "__USER__" -> userName,
+      "__TMPDIR__" -> tmpdir,
       "__JAVA__" -> (userJava :: javaFlags).mkString(" "),
       "__ENSIME_JAR__" -> ensimeJar,
       "__USER_SETTINGS__" -> userSettings.map(s => "\"" + s + "\"").mkString(" ")
@@ -47,7 +50,7 @@ object Launcher {
 
     replacements.foreach { case (k, v) => templ = templ.replace(k, v) }
 
-    templ
+    (templ, new File(tmpdir, hash))
   }
 
   // writes the ensime file for the given source file and appends a reverse

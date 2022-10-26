@@ -23,6 +23,7 @@ export function activate(context: vscode.ExtensionContext) {
 		vscode.window.showErrorMessage(`ENSIME: not available (${ensime_lspjar}). Visit https://ensime.github.io/ to download and install.`);
 	}
 
+        // TODO move this logic to the LSP
 	if (!fs.existsSync("~/.cache/ensime/~".replace("~", os.homedir).replace("~", os.homedir))) {
 		vscode.window.showInformationMessage("Welcome to ENSIME! Reload your projects after installing the ENSIME plugins, and compile at least once.");
 	}

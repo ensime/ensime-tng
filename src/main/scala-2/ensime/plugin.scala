@@ -3,8 +3,53 @@
 package ensime
 
 import java.io.File
+import java.nio.file.Files
+import java.nio.file.StandardOpenOption.{ APPEND, CREATE, TRUNCATE_EXISTING }
 
+import scala.reflect.internal.util.Position
 import scala.tools.nsc._
+import scala.tools.nsc.reporters._
+import scala.util.control.NonFatal
+
+class ReporterHack(
+  val underlying: Reporter,
+  val out: File
+) extends Reporter {
+  // scala 2.13 introduces a doReport that is nicer to use, but this is the only
+  // way to do it that works for all 2.x
+  override def info0(pos: Position, msg: String, severity: Severity, force: Boolean): Unit = {
+    severity.id match {
+      case 0 => underlying.echo(pos, msg)
+      case 1 => underlying.warning(pos, msg)
+      case 2 => underlying.error(pos, msg)
+    }
+    withDiagnosticsFile {
+      val file = new File(pos.source.file.path)
+      if (file.isFile) {
+        // NULL character used as separator
+        Files.writeString(out.toPath(), s"$severity\n$file\n${pos.line}\n${pos.column}\n$msg\n\u0000", APPEND, CREATE)
+      }
+    }
+  }
+  override def comment(pos: Position, msg: String): Unit = underlying.comment(pos, msg)
+  override def hasErrors: Boolean = super.hasErrors || underlying.hasErrors
+  override def reset(): Unit = {
+    underlying.reset()
+    withDiagnosticsFile {
+      Files.writeString(out.toPath, "", CREATE, TRUNCATE_EXISTING)
+    }
+  }
+  override def flush(): Unit = underlying.flush()
+
+  private def withDiagnosticsFile(f: => Unit): Unit = Launcher.synchronized {
+    try {
+      out.getParentFile().mkdirs()
+      f
+    } catch {
+      case NonFatal(_) =>
+    }
+  }
+}
 
 final class Plugin(override val global: Global) extends plugins.Plugin {
   override val description: String = "extracts build information for use by ENSIME"
@@ -12,9 +57,23 @@ final class Plugin(override val global: Global) extends plugins.Plugin {
 
   val isInteractive: Boolean = global.isInstanceOf[tools.nsc.interactive.Global]
   val isScaladoc: Boolean = global.isInstanceOf[tools.nsc.doc.ScaladocGlobal]
-  val isEnsime: Boolean = global.isInstanceOf[Compiler]
+  val isBatch: Boolean = !isInteractive && !isScaladoc
 
-  private lazy val launcher: String = Launcher.mkScript(global.settings.userSetSettings.toList.flatMap(_.unparse))
+  private lazy val (launcher: String, tmpdir: File) = Launcher.mkScript(global.settings.userSetSettings.toList.flatMap(_.unparse))
+
+  if (isBatch) {
+    // there's no way to be sure that this is the only time this is done without
+    // tracking references, we might be wrapping many times. Experiments with
+    // sbt suggest that every invocation of `compile` creates a fresh Reporter
+    // so it is safe to do this. There may be issues with other build tools.
+    //
+    // using the tmpdir ties it to the build hash (transient), not the
+    // individual files (semi-permanent).
+    // System.err.println(s"ENSIME installing reporter hack over existing ${System.identityHashCode(global.reporter)}")
+    global.reporter = new ReporterHack(global.reporter, new File(tmpdir, "diagnostics.log"))
+    //wobble
+    // System.err.println(s"ENSIME reporter is now ${System.identityHashCode(global.reporter)}")
+  }
 
   // `outputDirs.outputs` would have been better, since it contains the source
   // to target mapping, but doesn't seem to be used by sbt. `outdirs` doesn't
@@ -72,5 +131,5 @@ final class Plugin(override val global: Global) extends plugins.Plugin {
   // piece of text. Which presumably gives enough information to infer types
   // whilst incurring many caveats.
 
-  override val components = if (!isInteractive && !isScaladoc) List(phase) else Nil
+  override val components = if (isBatch) List(phase) else Nil
 }

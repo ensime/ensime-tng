@@ -27,7 +27,7 @@ class Plugin extends StandardPlugin {
     override def runOn(units: List[CompilationUnit])(implicit ctx: Context): List[CompilationUnit] = {
       if (!ctx.mode.is(Mode.Interactive)) {
         val target = ctx.settings.outputDir.value.file
-        val launcher = Launcher.mkScript(ctx.settings.userSetSettings(ctx.settingsState).toList.flatMap(_.unparse))
+        val (launcher, _) = Launcher.mkScript(ctx.settings.userSetSettings(ctx.settingsState).toList.flatMap(_.unparse))
 
         units.foreach { unit =>
           val file = unit.source.file.file
