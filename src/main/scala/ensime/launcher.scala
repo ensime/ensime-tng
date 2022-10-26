@@ -13,8 +13,6 @@ import java.util.UUID
 object Launcher {
   val pluginName = "ensime"
   val cacheDir = sys.props("user.home") + "/.cache/ensime/"
-  // TODO add a "launcher" onto the launcher location
-  // TODO add a .sh suffix
 
   def mkScript(userSettings: List[String]): (String, File) = {
     val ensimeJar = userSettings.find(_.matches(s"^-Xplugin:.*${pluginName}.*[.]jar$$")).head.stripPrefix("-Xplugin:")

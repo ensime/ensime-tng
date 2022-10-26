@@ -14,7 +14,7 @@ import scala.concurrent.Future
 import scala.jdk.CollectionConverters._
 import scala.jdk.FutureConverters._
 import scala.sys.process._
-import scala.util.control.NonFatal
+import scala.util.control.{ NoStackTrace, NonFatal }
 
 import org.eclipse.lsp4j._
 import org.eclipse.lsp4j.jsonrpc.Launcher
@@ -25,13 +25,10 @@ import org.eclipse.lsp4j.services._
 
 object EnsimeLsp {
 
-  // diagnostics are not supported. If somebody wants to add it, a good design
-  // for that would be to have the compiler plugin (when run in batch mode)
-  // intercept the reporter messages, and tee them into a file. That file could
-  // then be watched by this LSP server and reported back to the text editor.
-  // This would give perfect alignment between the compilation and the
-  // diagnostic messages (not relying on the presentation compiler) but without
-  // the need for an additional diagnostics compile server (such as bloop).
+  // TODO diagnostics for Scala 2 by watching and parsing the diagnostics.log file
+  // TODO raise a user story issue with Scala 3 to support similar
+
+  private val cacheDir = new File(sys.props("user.home") + "/.cache/ensime/")
 
   def main(args: Array[String]): Unit = {
     val runtimeMXBean = ManagementFactory.getRuntimeMXBean()
@@ -50,6 +47,24 @@ object EnsimeLsp {
     val client = launcher.getRemoteProxy
     server.connect(client)
     launcher.startListening()
+
+    if (!new File(cacheDir, sys.props("user.home")).exists()) {
+      client.showMessage(
+        new MessageParams(
+          MessageType.Info,
+          "Welcome to ENSIME! Reload your projects after installing, and compile at least once."
+        )
+      )
+    }
+
+    if (sys.env("PATH").split(File.pathSeparator).toList.find(d => new File(d, "ng").isFile).isEmpty) {
+      client.showMessage(
+        new MessageParams(
+          MessageType.Info,
+          "Install [Nailgun](https://github.com/facebook/nailgun) for a much faster experience."
+        )
+      )
+    }
   }
 
   // be nice and shut down automatically if the user doesn't talk to us in a while
@@ -81,16 +96,17 @@ object EnsimeLsp {
   }
 }
 
+object QuietExit extends Exception with NoStackTrace
+
 // see https://github.com/eclipse/lsp4j/issues/321 regarding annotations
 class EnsimeLsp extends LanguageServer with LanguageClientAware {
 
-  // TODO catch common failure exceptions here for cleaner responses
-  private def async[A](f: => A): CompletableFuture[A] = {
+  private def async[A >: Null](f: => A): CompletableFuture[A] = {
     EnsimeLsp.heartbeat()
 
     import scala.concurrent.ExecutionContext.Implicits.global
 
-    Future(f).asJava.toCompletableFuture
+    Future(try f catch { case QuietExit => null }).asJava.toCompletableFuture
   }
 
   override def initialize(params: InitializeParams): CompletableFuture[InitializeResult] = async {
@@ -153,9 +169,8 @@ class EnsimeLsp extends LanguageServer with LanguageClientAware {
       others
   }
 
-  private val cacheDir = sys.props("user.home") + "/.cache/ensime/"
   private def ensimeFile(focus: File): Option[File] = {
-    val probe = new File(s"${cacheDir}${focus.getAbsolutePath}")
+    val probe = new File(EnsimeLsp.cacheDir, focus.getAbsolutePath)
     if (probe.isFile) Some(probe)
     else None
   }
@@ -174,10 +189,27 @@ class EnsimeLsp extends LanguageServer with LanguageClientAware {
       lastEnsimeExe = exe
       exe.get
     } else {
-      // TODO should be a popup
-      lastEnsimeExe.getOrElse(throw new IllegalStateException("ENSIME is not available, blah blah instructions to set it up"))
+      lastEnsimeExe match {
+        case Some(last) => last
+        case None =>
+          if (!shownHelp) {
+            shownHelp = true
+            client.showMessage(
+              new MessageParams(
+                MessageType.Warning,
+                "The ENSIME launcher (created as a side effect of the compilation) was not found. Common problems:\n\n" +
+                  "  1. the ENSIME plugin has not been installed for this project's version of Scala.\n" +
+                  "  2. the build tool has not been reloaded or informed about ENSIME.\n" +
+                  "  3. the project or file has not been cleanly compiled at least once.\n\n" +
+                  "Please consult the ENSIME README for further instructions and to check compatibility."
+              )
+            )
+          }
+          throw QuietExit
+      }
     }
   }
+  @volatile private var shownHelp: Boolean = false
   @volatile private var lastEnsimeExe: Option[File] = None
 
   // shared between all ensime instances, this could be made cleaner by adding HASH
@@ -223,7 +255,7 @@ class EnsimeLsp extends LanguageServer with LanguageClientAware {
     try command.!!
     catch {
       // usually just means the file is uncompilable, which can be normal
-      case NonFatal(_) => return null
+      case NonFatal(_) => throw QuietExit
     } finally {
       if (stderr.nonEmpty)
         System.err.println(stderr.toString)
@@ -285,7 +317,6 @@ class EnsimeLsp extends LanguageServer with LanguageClientAware {
         Nil
       } else {
         val output = ensime("complete", f, pos)
-        if (output eq null) return null
         output.split("\n").toList.map { sig =>
           val item = new CompletionItem
           item.setLabel(sig)
@@ -312,7 +343,6 @@ class EnsimeLsp extends LanguageServer with LanguageClientAware {
     override def hover(params: HoverParams): CompletableFuture[Hover] = async {
       val f = uriToFile_(params.getTextDocument.getUri)
       val output = ensime("type", f, params.getPosition)
-      if (output eq null) return null
       val content = new MarkupContent("plaintext", output)
       new Hover(content)
     }
@@ -320,13 +350,12 @@ class EnsimeLsp extends LanguageServer with LanguageClientAware {
     override def definition(params: DefinitionParams): CompletableFuture[LspEither[JList[_ <: Location], JList[_ <: LocationLink]]] = async {
       val f = uriToFile_(params.getTextDocument.getUri)
       val output = ensime("source", f, params.getPosition)
-      if (output eq null) return null
       val defns = output.split("\n").toList.map { resp =>
         val parts = resp.split(":")
         if (parts.length != 2) {
           // debug why and when this happens... seen in the wild (scala.runtime.NonLocalReturnControl)
           System.err.println(s"ENSIME unexpected response $resp")
-          return null
+          throw QuietExit
         }
         val file = if (parts(0).isEmpty) f.toString else parts(0).replace(tmp_prefix, "")
         val pos = new Position(0 max (parts(1).toInt - 1), 0)
@@ -378,10 +407,9 @@ class EnsimeLsp extends LanguageServer with LanguageClientAware {
         val f = uriToFile_(uri)
 
         val token = tokenAtPoint(openFiles(f), pos)
-        if (token.isEmpty) return null
+        if (token.isEmpty) throw QuietExit
 
         val output = ensime("search", f, token, false)
-        if (output eq null) return null
         val results = output.split("\n").toList
         System.err.println(results)
 

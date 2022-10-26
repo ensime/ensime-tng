@@ -23,14 +23,6 @@ export function activate(context: vscode.ExtensionContext) {
 		vscode.window.showErrorMessage(`ENSIME: not available (${ensime_lspjar}). Visit https://ensime.github.io/ to download and install.`);
 	}
 
-        // TODO move this logic to the LSP
-	if (!fs.existsSync("~/.cache/ensime/~".replace("~", os.homedir).replace("~", os.homedir))) {
-		vscode.window.showInformationMessage("Welcome to ENSIME! Reload your projects after installing the ENSIME plugins, and compile at least once.");
-	}
-
-	// would be good to remind the user to add a key binding for Import Symbol if none is set.
-        // TODO check if nailgun is installed and recommend if not
-
 	const serverOptions: ServerOptions = {
 		run: { command: ensime_java, transport: TransportKind.stdio, args: runArgs },
 		// debug is hacked, we don't actually do anything differently...
