@@ -35,11 +35,13 @@ class ReporterHack(
   override def hasErrors: Boolean = super.hasErrors || underlying.hasErrors
   override def reset(): Unit = {
     underlying.reset()
-    withDiagnosticsFile {
-      Files.writeString(out.toPath, "", CREATE, TRUNCATE_EXISTING)
-    }
+    resetThis()
   }
   override def flush(): Unit = underlying.flush()
+
+  def resetThis(): Unit = withDiagnosticsFile {
+    Files.writeString(out.toPath, "", CREATE, TRUNCATE_EXISTING)
+  }
 
   private def withDiagnosticsFile(f: => Unit): Unit = Launcher.synchronized {
     try {
@@ -71,7 +73,9 @@ final class Plugin(override val global: Global) extends plugins.Plugin {
     // individual files (semi-permanent).
 
     // uncomment this line to beta test the hacky diagnostics support
-    // global.reporter = new ReporterHack(global.reporter, new File(tmpdir, "diagnostics.log"))
+    val hack = new ReporterHack(global.reporter, new File(tmpdir, "diagnostics.log"))
+    hack.resetThis() // cleans the file
+    global.reporter = hack
   }
 
   // `outputDirs.outputs` would have been better, since it contains the source

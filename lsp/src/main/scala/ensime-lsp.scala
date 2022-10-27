@@ -3,7 +3,7 @@ package ensime
 import java.io.File
 import java.lang.management.ManagementFactory
 import java.net.URI
-import java.nio.file.{ Files, Path }
+import java.nio.file.{ FileSystem, FileSystems, Files, Path, StandardWatchEventKinds, WatchEvent, WatchService }
 import java.nio.file.StandardCopyOption.REPLACE_EXISTING
 import java.nio.file.StandardOpenOption.{ CREATE, TRUNCATE_EXISTING }
 import java.util.{ List => JList, Timer, TimerTask }
@@ -52,16 +52,16 @@ object EnsimeLsp {
       client.showMessage(
         new MessageParams(
           MessageType.Info,
-          "Welcome to ENSIME! Reload your projects after installing, and compile at least once."
+          // to run the LSP the user must have already built the repository at least once
+          "Welcome to ENSIME! Reload your build tool after installing the compiler plugin, and compile at least once."
         )
       )
-    }
-
-    if (sys.env("PATH").split(File.pathSeparator).toList.find(d => new File(d, "ng").isFile).isEmpty) {
+    } else if (sys.env("PATH").split(File.pathSeparator).toList.find(d => new File(d, "ng").isFile).isEmpty) {
       client.showMessage(
         new MessageParams(
           MessageType.Info,
-          "Install [Nailgun](https://github.com/facebook/nailgun) for a much faster experience."
+          // will appear on second use, if the user didn't follow all the README instructions
+          "Install [Nailgun](https://github.com/facebook/nailgun) for a more performant experience."
         )
       )
     }
@@ -158,18 +158,18 @@ class EnsimeLsp extends LanguageServer with LanguageClientAware {
   // be ignored, which is an intentional design decision (the user is expected
   // to compile files all dependencies). The response does not contain the
   // input.
-  private def activeSet(focus: File): Set[File] = ensimeFile(focus) match {
+  private def activeSet(focus: File): Set[File] = launcher(focus) match {
     case None => Set()
     case Some(focusEnsime) =>
       val hash = ensimeHash(focusEnsime)
       // System.err.println(s"CALCULATING ACTIVE SET FOR $hash")
-      val others = (openFiles.keySet - focus).flatMap(ensimeFile).filter {
+      val others = (openFiles.keySet - focus).flatMap(launcher).filter {
         e => ensimeHash(e) == hash
       }
       others
   }
 
-  private def ensimeFile(focus: File): Option[File] = {
+  private def launcher(focus: File): Option[File] = {
     val probe = new File(EnsimeLsp.cacheDir, focus.getAbsolutePath)
     if (probe.isFile) Some(probe)
     else None
@@ -184,7 +184,7 @@ class EnsimeLsp extends LanguageServer with LanguageClientAware {
   // like ensimeFile but also tries to use a "last best known" file which covers
   // the corner case of new files that haven't been compiled yet.
   private def ensimeExe(focus: File): File = {
-    val exe = ensimeFile(focus)
+    val exe = launcher(focus)
     if (exe.isDefined) {
       lastEnsimeExe = exe
       exe.get
@@ -282,6 +282,58 @@ class EnsimeLsp extends LanguageServer with LanguageClientAware {
     buf.toString
   }
 
+  // the events of a FileWatcher do not include the full path, so we need a new
+  // watcher for every directory that we want to watch. This is keyed by the
+  // diagnostics file and the project hash.
+  @volatile private var watchers: Map[(File, String), WatchService] = Map()
+  new Thread("file-watcher") {
+    override def run(): Unit = while (true) {
+      watchers.synchronized {
+        watchers.foreach { case ((file, hash), watcher) =>
+          val key = watcher.take()
+          key.pollEvents().asScala.foreach { e =>
+            e.context() match {
+              case p: Path =>
+                if (p.toString == "diagnostics.log") {
+                  System.err.println(s"detected changes to $file")
+                  try diagnosticsCallback(file, hash)
+                  catch {
+                    case NonFatal(e) =>
+                      System.err.println(e.getMessage)
+                  }
+                }
+              case _ =>
+            }
+          }
+          key.reset()
+        }
+      }
+      Thread.sleep(1000)
+    }
+  }.start()
+
+  // invoked when the diagnostics.log file changes (may be deleted or empty)
+  def diagnosticsCallback(log: File, hash: String): Unit = {
+    // TODO invalidate the active diagnostics
+    val timestamp = if (!log.exists()) -1L else log.lastModified()
+    val contents = if (!log.exists()) "" else Files.readString(log.toPath()).split("\u0000").foreach { s =>
+      val level :: path :: line :: col :: msg_ = s.split("\n").toList
+      val msg = msg_.mkString("\n")
+
+      val file = new File(path)
+      if (openFiles.contains(file) && file.exists() && file.lastModified() <= timestamp) {
+        // TODO send diagnostics to the client
+        System.err.println(s"$level:$file:$line:$col:$msg")
+      }
+    }
+  }
+
+  @volatile private var subscriptions: Set[File] = Set()
+  private def diagnosticsFile(f: File): Option[File] = launcher(f).map { ef =>
+    val hash = ensimeHash(ef)
+    new File(tmp_prefix, hash + "/diagnostics.log")
+  }
+
   override def getTextDocumentService(): TextDocumentService = new TextDocumentService {
     // we only care about monitoring the active set
     override def didClose(p: DidCloseTextDocumentParams): Unit = {
@@ -294,6 +346,23 @@ class EnsimeLsp extends LanguageServer with LanguageClientAware {
       // System.err.println(s"OPENED $f")
       val content = p.getTextDocument.getText
       openFiles = openFiles + (f -> content)
+
+      launcher(f).foreach { ef =>
+        val hash = ensimeHash(ef)
+        val df = new File(tmp_prefix, hash + "/diagnostics.log")
+
+        watchers.synchronized {
+          if (!watchers.contains((df, hash))) {
+            System.err.println(s"registering a filewatcher for $df")
+            val watcher = FileSystems.getDefault().newWatchService()
+
+            import StandardWatchEventKinds._
+            df.toPath.getParent.register(watcher, ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY)
+
+            watchers += ((df, hash) -> watcher)
+          }
+        }
+      }
     }
     override def didChange(p: DidChangeTextDocumentParams): Unit = {
       val f = uriToFile_(p.getTextDocument.getUri)
