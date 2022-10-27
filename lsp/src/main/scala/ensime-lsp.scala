@@ -25,9 +25,6 @@ import org.eclipse.lsp4j.services._
 
 object EnsimeLsp {
 
-  // TODO diagnostics for Scala 2 by watching and parsing the diagnostics.log file
-  // TODO raise a user story issue with Scala 3 to support similar
-
   private val cacheDir = new File(sys.props("user.home") + "/.cache/ensime/")
 
   def main(args: Array[String]): Unit = {
@@ -160,21 +157,18 @@ class EnsimeLsp extends LanguageServer with LanguageClientAware {
   // input.
   private def activeSet(focus: File): Set[File] = launcher(focus) match {
     case None => Set()
-    case Some(focusEnsime) =>
-      val hash = ensimeHash(focusEnsime)
-      // System.err.println(s"CALCULATING ACTIVE SET FOR $hash")
-      val others = (openFiles.keySet - focus).flatMap(launcher).filter {
-        e => ensimeHash(e) == hash
-      }
-      others
+    case Some(focusLauncher) => filesWithHash(launcherHash(focusLauncher)) - focus
   }
+
+  private def filesWithHash(hash: String): Set[File] =
+    openFiles.keySet.filter { f => launcher(f).map(launcherHash) == Some(hash) }
 
   private def launcher(focus: File): Option[File] = {
     val probe = new File(EnsimeLsp.cacheDir, focus.getAbsolutePath)
     if (probe.isFile) Some(probe)
     else None
   }
-  private def ensimeHash(ensime: File): String = {
+  private def launcherHash(ensime: File): String = {
     Files.readAllLines(ensime.toPath).asScala.find(_.startsWith("HASH=")).map(_.drop(5)) match {
       case Some(hash) => hash
       case None => throw new IllegalStateException(s"ENSIME file $ensime is corrupted")
@@ -299,7 +293,7 @@ class EnsimeLsp extends LanguageServer with LanguageClientAware {
                   try diagnosticsCallback(file, hash)
                   catch {
                     case NonFatal(e) =>
-                      System.err.println(e.getMessage)
+                      System.err.println(s"error when calculating diagnostics: ${e.getMessage} ${e.getClass}")
                   }
                 }
               case _ =>
@@ -314,23 +308,51 @@ class EnsimeLsp extends LanguageServer with LanguageClientAware {
 
   // invoked when the diagnostics.log file changes (may be deleted or empty)
   def diagnosticsCallback(log: File, hash: String): Unit = {
-    // TODO invalidate the active diagnostics
     val timestamp = if (!log.exists()) -1L else log.lastModified()
-    val contents = if (!log.exists()) "" else Files.readString(log.toPath()).split("\u0000").foreach { s =>
-      val level :: path :: line :: col :: msg_ = s.split("\n").toList
-      val msg = msg_.mkString("\n")
+    val updates: List[(File, Diagnostic)] = {
+      if (!log.exists()) Nil
+      else Files.readString(log.toPath)
+        .split("\u0000")
+        .toList
+        .map(_.split("\n").toList)
+        .flatMap {
+          case level :: path :: sline :: scol :: eline :: ecol :: msg_ =>
+            val msg = msg_.mkString("\n")
+            val severity = level match {
+              case "WARNING" => DiagnosticSeverity.Warning
+              case "ERROR" => DiagnosticSeverity.Error
+              case _ => DiagnosticSeverity.Information
+            }
+            val file = new File(path)
+            if (openFiles.contains(file) && file.exists() && file.lastModified() <= timestamp) {
+              val range = new Range(new Position(sline.toInt - 1, scol.toInt - 1), new Position(eline.toInt - 1, ecol.toInt - 1))
+              val diagnostic = new Diagnostic(range, msg)
+              diagnostic.setSeverity(severity)
+              Some(file -> diagnostic)
+            } else None
 
-      val file = new File(path)
-      if (openFiles.contains(file) && file.exists() && file.lastModified() <= timestamp) {
-        // TODO send diagnostics to the client
-        System.err.println(s"$level:$file:$line:$col:$msg")
-      }
+          case _ => None
+        }
+    }
+
+    System.err.println(s"${updates.size} diagnostics from the latest compile")
+
+    // must send an empty list to clear the files
+    val clean = filesWithHash(hash).map { f => (f, Nil)}.toMap
+
+    // updates take precedence
+    (clean ++ updates.groupBy(_._1)).foreach { case (file, ds) =>
+      val diagnostics = ds.map(_._2).asJava
+      System.err.println(s"publishing ${diagnostics.size} diagnostics for $file")
+      client.publishDiagnostics(
+        new PublishDiagnosticsParams(file.toString, diagnostics)
+      )
     }
   }
 
   @volatile private var subscriptions: Set[File] = Set()
   private def diagnosticsFile(f: File): Option[File] = launcher(f).map { ef =>
-    val hash = ensimeHash(ef)
+    val hash = launcherHash(ef)
     new File(tmp_prefix, hash + "/diagnostics.log")
   }
 
@@ -348,7 +370,7 @@ class EnsimeLsp extends LanguageServer with LanguageClientAware {
       openFiles = openFiles + (f -> content)
 
       launcher(f).foreach { ef =>
-        val hash = ensimeHash(ef)
+        val hash = launcherHash(ef)
         val df = new File(tmp_prefix, hash + "/diagnostics.log")
 
         watchers.synchronized {

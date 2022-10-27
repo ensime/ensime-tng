@@ -27,7 +27,9 @@ class ReporterHack(
       val file = new File(pos.source.file.path)
       if (file.isFile) {
         // NULL character used as separator
-        Files.writeString(out.toPath(), s"$severity\n$file\n${pos.line}\n${pos.column}\n$msg\n\u0000", APPEND, CREATE)
+        val start = pos.focusStart
+        val end = pos.focusEnd
+        Files.writeString(out.toPath(), s"$severity\n$file\n${start.line}\n${start.column}\n${end.line}\n${end.column}\n$msg\n\u0000", APPEND, CREATE)
       }
     }
   }

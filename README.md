@@ -13,6 +13,10 @@ The feature set is constrained to allow the codebase to be lean and maintainable
 - import / search for class
 - jump to source
 
+with diagnostics only working in Scala 2.
+
+// TODO raise a ticket with Scala 3 to support Reporter callbacks
+
 # Installation
 
 ## Server
