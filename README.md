@@ -93,13 +93,17 @@ When building and installing the compiler plugin, we took the liberty of install
 
 ENSIME must be installed for every Mill project. Copy the `mill/Ensime.sc` file into the `plugins` folder of your project and follow the instructions in the comments of that file.
 
-Vote or comment on https://github.com/com-lihaoyi/mill/discussions/2075 to get this added to Mill by default.
+Implement and push through https://github.com/com-lihaoyi/mill/discussions/2075 to get this added to Mill by default.
+
+### scala-cli
+
+TODO https://github.com/VirtusLab/scala-cli/issues/1502
 
 # Known Issues
 
-Only tested on GNU/Linux, and to a lesser extent MacOS. Windows almost certainly needs additional support.
+Only tested on GNU/Linux, and to a lesser extent MacOS. Development work is needed to get it to work no Windows.
 
-ScalaJS and Scala Native do not have any special handling and your mileage may vary.
+ScalaJS and Scala Native do not have any special handling and will only work for source files that are compiled to java bytecode.
 
 The Scala 3 compiler regresses many behaviours and features may be degraded, e.g. completions for extension methods might include erroneous extra parameters.
 
