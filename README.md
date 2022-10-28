@@ -65,6 +65,8 @@ Install the `ensime-mode` when enabling `scala-mode` and add your keybindings, e
 
 ### VSCode
 
+First uninstall any other Scala LSPs that you may have installed, e.g. Metals.
+
 Go to the Extension manager and "Install from VSIX", choosing the ENSIME `.vsix` file.
 
 You may wish to bind the custom command "Import Symbol" to a hotkey.
