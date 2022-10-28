@@ -39,10 +39,7 @@ object Main {
       val checker = new TimerTask {
         def run(): Unit =
           if (System.currentTimeMillis() > (heartbeat_ + timeout)) ng.signalExit()
-          else {
-            System.gc()
-            System.runFinalization()
-          }
+          else System.gc()
       }
       new Timer("shutdowner", true).scheduleAtFixedRate(checker, 30000L, 30000L)
     }

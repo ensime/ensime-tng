@@ -85,10 +85,7 @@ object EnsimeLsp {
           if (System.currentTimeMillis() > (heartbeat_ + timeout)) {
             System.err.println("Shutting down ENSIME LSP due to inactivity")
             sys.exit(0)
-          } else {
-            System.gc()
-            System.runFinalization()
-          }
+          } else System.gc()
         }
       }
       new Timer("shutdowner", true).scheduleAtFixedRate(checker, 30000L, 30000L)
@@ -249,7 +246,7 @@ class EnsimeLsp extends LanguageServer with LanguageClientAware {
     val command = s"$exe $mode $params$args $context"
     System.err.println(command)
 
-    try command.!!
+    try command !! processLogger
     catch {
       // usually just means the file is uncompilable, which can be normal
       case NonFatal(_) => throw QuietExit
