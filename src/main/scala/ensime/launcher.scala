@@ -23,7 +23,7 @@ object Launcher {
 
     // release as much memory back to the OS as possible to keep our overhead low
     // https://stackoverflow.com/questions/30458195
-    val javaFlags = List("-XX:-ShrinkHeapInSteps", "-XX:MinHeapFreeRatio=20", "-XX:MaxHeapFreeRatio=40")
+    val javaFlags = List("-Xms100m", "-XX:-ShrinkHeapInSteps", "-XX:MinHeapFreeRatio=20", "-XX:MaxHeapFreeRatio=40")
 
     // could capture envvars behind an allow-list
     var templ = getResourceAsString("ensime/launcher.sh")

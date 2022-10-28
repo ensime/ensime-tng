@@ -77,6 +77,7 @@ VSIX files are made available at https://ensime.github.io/ but if you want to bu
 cd lsp/vscode
 npm install
 npm run package
+cd -
 ```
 
 ### NeoVim

@@ -87,10 +87,11 @@ object EnsimeLsp {
             sys.exit(0)
           } else {
             System.gc()
+            System.runFinalization()
           }
         }
       }
-      new Timer("shutdowner", true).scheduleAtFixedRate(checker, timeout, 30000L)
+      new Timer("shutdowner", true).scheduleAtFixedRate(checker, 30000L, 30000L)
     }
   }
 }
