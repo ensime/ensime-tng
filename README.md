@@ -103,7 +103,7 @@ TODO https://github.com/VirtusLab/scala-cli/issues/1502
 
 # Known Issues
 
-Only tested on GNU/Linux, and to a lesser extent MacOS. Development work is needed to get it to work no Windows.
+Only tested on GNU/Linux, and to a lesser extent MacOS. Development work is needed to get it to work on Windows.
 
 ScalaJS and Scala Native do not have any special handling and will only work for source files that are compiled to java bytecode.
 
