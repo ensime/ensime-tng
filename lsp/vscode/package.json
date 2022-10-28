@@ -68,7 +68,7 @@
           },
           "ensime.javaargs": {
             "type": "string",
-            "default": "-XX:-ShrinkHeapInSteps",
+            "default": "-XX:-ShrinkHeapInSteps -XX:MinHeapFreeRatio=20 -XX:MaxHeapFreeRatio=40",
             "description": "Arguments to pass to the `java` binary."
           },
           "ensime.lspjar": {

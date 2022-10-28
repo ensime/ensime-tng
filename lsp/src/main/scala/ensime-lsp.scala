@@ -85,6 +85,8 @@ object EnsimeLsp {
           if (System.currentTimeMillis() > (heartbeat_ + timeout)) {
             System.err.println("Shutting down ENSIME LSP due to inactivity")
             sys.exit(0)
+          } else {
+            System.gc()
           }
         }
       }
