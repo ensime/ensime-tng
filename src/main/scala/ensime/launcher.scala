@@ -27,7 +27,7 @@ object Launcher {
     val javaFlags = if (javaVersion >= 13) {
       List("-XX:+UseZGC")
     } else if (javaVersion >= 9) {
-      List("-XX:+ShrinkHeapInSteps")
+      List("-XX:-ShrinkHeapInSteps")
     } else Nil
 
     // could capture envvars behind an allow-list
