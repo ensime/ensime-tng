@@ -3,7 +3,7 @@ organization := "com.fommil"
 licenses := List(License.GPL3_or_later)
 
 ThisBuild / crossScalaVersions := List(
-  "3.2.0",
+  "3.2.1",
   "2.13.10",
   "2.12.15", // the version of scala used by sbt 1.6.2
   "2.12.17",
