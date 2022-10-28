@@ -283,31 +283,36 @@ class EnsimeLsp extends LanguageServer with LanguageClientAware {
   // watcher for every directory that we want to watch. This is keyed by the
   // diagnostics file and the project hash.
   @volatile private var watchers: Map[(File, String), WatchService] = Map()
-  new Thread("file-watcher") {
-    override def run(): Unit = while (true) {
-      watchers.synchronized {
-        watchers.foreach { case ((file, hash), watcher) =>
-          val key = watcher.take()
-          key.pollEvents().asScala.foreach { e =>
-            e.context() match {
-              case p: Path =>
-                if (p.toString == "diagnostics.log") {
-                  System.err.println(s"detected changes to $file")
-                  try diagnosticsCallback(file, hash)
-                  catch {
-                    case NonFatal(e) =>
-                      System.err.println(s"error when calculating diagnostics: ${e.getMessage} ${e.getClass}")
+
+  {
+    val watcherThread = new Thread("file-watcher") {
+      override def run(): Unit = while (true) {
+        watchers.synchronized {
+          watchers.foreach { case ((file, hash), watcher) =>
+            val key = watcher.take()
+            key.pollEvents().asScala.foreach { e =>
+              e.context() match {
+                case p: Path =>
+                  if (p.toString == "diagnostics.log") {
+                    System.err.println(s"detected changes to $file")
+                    try diagnosticsCallback(file, hash)
+                    catch {
+                      case NonFatal(e) =>
+                        System.err.println(s"error when calculating diagnostics: ${e.getMessage} ${e.getClass}")
+                    }
                   }
-                }
-              case _ =>
+                case _ =>
+              }
             }
+            key.reset()
           }
-          key.reset()
         }
+        Thread.sleep(1000)
       }
-      Thread.sleep(1000)
     }
-  }.start()
+    watcherThread.setDaemon(true)
+    watcherThread.start()
+  }
 
   // invoked when the diagnostics.log file changes (may be deleted or empty)
   def diagnosticsCallback(log: File, hash: String): Unit = {
@@ -549,7 +554,7 @@ class EnsimeLsp extends LanguageServer with LanguageClientAware {
     override def didSave(p: DidSaveNotebookDocumentParams): Unit = ()
   }
 
-  override def shutdown(): CompletableFuture[Object] = async { new Object }
+  override def shutdown(): CompletableFuture[Object] = async { null }
   override def exit(): Unit = sys.exit(0)
 
   // recommended by
