@@ -93,7 +93,7 @@ object EnsimeLsp {
   }
 }
 
-object QuietExit extends Exception with NoStackTrace
+case class QuietExit(msg: String) extends Exception(msg)
 
 // see https://github.com/eclipse/lsp4j/issues/321 regarding annotations
 class EnsimeLsp extends LanguageServer with LanguageClientAware {
@@ -103,7 +103,14 @@ class EnsimeLsp extends LanguageServer with LanguageClientAware {
 
     import scala.concurrent.ExecutionContext.Implicits.global
 
-    Future(try f catch { case QuietExit => null }).asJava.toCompletableFuture
+    Future{
+      try f
+      catch {
+        case QuietExit(msg) =>
+          System.err.println(s"early exit: $msg")
+          null
+      }
+    }.asJava.toCompletableFuture
   }
 
   override def initialize(params: InitializeParams): CompletableFuture[InitializeResult] = async {
@@ -199,7 +206,7 @@ class EnsimeLsp extends LanguageServer with LanguageClientAware {
               )
             )
           }
-          throw QuietExit
+          throw QuietExit(s"ENSIME launcher not available for $focus")
       }
     }
   }
@@ -249,7 +256,7 @@ class EnsimeLsp extends LanguageServer with LanguageClientAware {
     try command !! processLogger
     catch {
       // usually just means the file is uncompilable, which can be normal
-      case NonFatal(_) => throw QuietExit
+      case NonFatal(_) => throw QuietExit(s"ensime launcher failed, source may be uncompilable, this can be expected")
     } finally {
       if (stderr.nonEmpty)
         System.err.println(stderr.toString)
@@ -284,26 +291,25 @@ class EnsimeLsp extends LanguageServer with LanguageClientAware {
   {
     val watcherThread = new Thread("file-watcher") {
       override def run(): Unit = while (true) {
-        watchers.synchronized {
-          watchers.foreach { case ((file, hash), watcher) =>
-            val key = watcher.take()
-            key.pollEvents().asScala.foreach { e =>
-              e.context() match {
-                case p: Path =>
-                  if (p.toString == "diagnostics.log") {
-                    System.err.println(s"detected changes to $file")
-                    try diagnosticsCallback(file, hash)
-                    catch {
-                      case NonFatal(e) =>
-                        System.err.println(s"error when calculating diagnostics: ${e.getMessage} ${e.getClass}")
-                    }
+        watchers.foreach { case ((file, hash), watcher) =>
+          val key = watcher.take()
+          key.pollEvents().asScala.foreach { e =>
+            e.context() match {
+              case p: Path =>
+                if (p.toString == "diagnostics.log") {
+                  System.err.println(s"detected changes to $file")
+                  try diagnosticsCallback(file, hash)
+                  catch {
+                    case NonFatal(e) =>
+                      System.err.println(s"error when calculating diagnostics: ${e.getMessage} ${e.getClass}")
                   }
-                case _ =>
-              }
+                }
+              case _ =>
             }
-            key.reset()
           }
+          key.reset()
         }
+
         Thread.sleep(1000)
       }
     }
@@ -365,20 +371,26 @@ class EnsimeLsp extends LanguageServer with LanguageClientAware {
     // we only care about monitoring the active set
     override def didClose(p: DidCloseTextDocumentParams): Unit = {
       val f = uriToFile_(p.getTextDocument.getUri)
-      // System.err.println(s"CLOSED $f")
-      openFiles -= f
+      System.err.println(s"CLOSED $f")
+
+      synchronized {
+        openFiles -= f
+      }
     }
     override def didOpen(p: DidOpenTextDocumentParams): Unit = {
       val f = uriToFile_(p.getTextDocument.getUri)
-      // System.err.println(s"OPENED $f")
+      System.err.println(s"OPENED $f")
       val content = p.getTextDocument.getText
-      openFiles = openFiles + (f -> content)
+
+      synchronized {
+        openFiles = openFiles + (f -> content)
+      }
 
       launcher(f).foreach { ef =>
         val hash = launcherHash(ef)
         val df = new File(tmp_prefix, hash + "/diagnostics.log")
 
-        watchers.synchronized {
+        synchronized {
           if (!watchers.contains((df, hash))) {
             System.err.println(s"registering a filewatcher for $df")
             val watcher = FileSystems.getDefault().newWatchService()
@@ -395,7 +407,10 @@ class EnsimeLsp extends LanguageServer with LanguageClientAware {
       val f = uriToFile_(p.getTextDocument.getUri)
       // System.err.println(s"CHANGED $f")
       val content = p.getContentChanges.get(0).getText // Full means this is not a diff
-      openFiles = openFiles + (f -> content)
+
+      synchronized {
+        openFiles = openFiles + (f -> content)
+      }
     }
 
     override def didSave(p: DidSaveTextDocumentParams): Unit = ()
@@ -450,8 +465,7 @@ class EnsimeLsp extends LanguageServer with LanguageClientAware {
         val parts = resp.split(":")
         if (parts.length != 2) {
           // debug why and when this happens... seen in the wild (scala.runtime.NonLocalReturnControl)
-          System.err.println(s"ENSIME unexpected response $resp")
-          throw QuietExit
+          throw QuietExit(s"unexpected launcher response $resp")
         }
         val file = if (parts(0).isEmpty) f.toString else parts(0).replace(tmp_prefix, "")
         val pos = new Position(0 max (parts(1).toInt - 1), 0)
@@ -503,7 +517,7 @@ class EnsimeLsp extends LanguageServer with LanguageClientAware {
         val f = uriToFile_(uri)
 
         val token = tokenAtPoint(openFiles(f), pos)
-        if (token.isEmpty) throw QuietExit
+        if (token.isEmpty) throw QuietExit("no token there")
 
         val output = ensime("search", f, token, false)
         val results = output.split("\n").toList
