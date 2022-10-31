@@ -162,7 +162,7 @@ object Main {
               // can do
               List(if (lines.isEmpty) 0 else lines.min)
           }
-          resolved = attachedSourceRoot(f, filename)
+          resolved = attachedSourceRoot(f, filename, err)
           _ = if (resolved.isEmpty) {
             // this line probably means that we need more heuristics to find source jars
             err.println(s"[WARNING] resolved binary to $f which references $filename, which was not found.")
@@ -172,7 +172,7 @@ object Main {
     }
   }
 
-  private def attachedSourceRoot(bin: LocalFile, filename: String): List[LocalFile] = {
+  private def attachedSourceRoot(bin: LocalFile, filename: String, err: PrintStream): List[LocalFile] = {
     def find(walk: =>java.util.stream.Stream[Path]): List[Path] = {
       def tester(s: String) = walk
         .filter(Files.isRegularFile(_))
@@ -201,15 +201,19 @@ object Main {
             // there is no standard convention for the location of the sources
             // jar or zip file, so we apply heuristics. This also requires the
             // user to have downloaded the sources in the first place.
-            val candidates = sbtBootHack(jar) ++ List(
-              new File(jar.getParent, jar.getName.replaceAll("[.]jar$", "-sources.jar"))
-            )
-            candidates.find(_.exists())
+            sbtBootHack(jar).orElse {
+              Some(new File(jar.getParent, jar.getName.replaceAll("[.]jar$", "-sources.jar")))
+            }
           case "jrt" =>
             Some(new File(sys.props("java.home"), "/lib/src.zip"))
           case _ => None
         }
-      }.toList.filter(_.isFile).flatMap { f =>
+      }.toList.filter { f =>
+        if (!f.isFile()) {
+          err.println(s"possible missing source $f")
+        }
+        f.isFile
+      }.flatMap { f =>
         withJarFileSystem(f.toURI) { root =>
           find(Files.walk(root))
         }.map(e => LocalFile(Right(f.toURI), e))
@@ -220,12 +224,12 @@ object Main {
   // sbt re-uses its own scala library and compiler to avoid downloading for the
   // user's project when versions match, but the sources are downloaded
   // elsewhere.
-  def sbtBootHack(f: File): List[File] = {
+  def sbtBootHack(f: File): Option[File] = {
     val m = Pattern.compile(".*/[.]sbt/boot/scala-([^/]+)/lib/([^/.]+)[.]jar$").matcher(f.toString)
-    if (!m.find()) Nil else {
+    if (!m.find()) None else {
       val version = m.group(1)
       val artifact = m.group(2)
-      List(new File(s"""${sys.props("user.home")}/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-lang/scala-library/${version}/${artifact}-${version}-sources.jar"""))
+      Some(new File(s"""${sys.props("user.home")}/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-lang/scala-library/${version}/${artifact}-${version}-sources.jar"""))
     }
   }
 
