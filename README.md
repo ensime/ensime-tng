@@ -136,6 +136,13 @@ For every source file a file is written into the cache containing all the inform
 
 [`ng`](https://github.com/facebook/nailgun) is compiled and used so that ENSIME runs as a background server with millisecond response times. This only requires `cc` to be available.
 
+```
+wget https://raw.githubusercontent.com/facebook/nailgun/main/nailgun-client/c/ng.c
+cc -O2 ng.c -o ng
+sudo install ng /usr/local/bin/
+rm -f ng.c ng
+```
+
 ### Local Source Lookup
 
 For every output directory a file is written into the cache containing the list of source files that produced the binary.
