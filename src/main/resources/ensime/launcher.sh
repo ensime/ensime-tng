@@ -5,7 +5,7 @@ TMPDIR="__TMPDIR__/__HASH__/"
 
 cd "__USERDIR__"  || exit
 
-if ! hash ng 2>/dev/null ; then
+if ! hash nailgun 2>/dev/null ; then
     exec __JAVA__ -cp "__ENSIME_JAR__" -Dscala.classpath.closeZip=true ensime.Main __USER_SETTINGS__ $*
 fi
 
@@ -44,7 +44,7 @@ while [ -z $NAILGUN_PORT ] ; do
     set_port
 done
 
-ng ensime.Main __USER_SETTINGS__ $*
+nailgun ensime.Main __USER_SETTINGS__ $*
 
 RESP=$?
 if [ $RESP = "230" ] ; then

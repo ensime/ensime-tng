@@ -134,13 +134,14 @@ The plugin runs as early as possible, creating the following output:
 
 For every source file a file is written into the cache containing all the information that is needed to launch the interactive compiler.
 
-[`ng`](https://github.com/facebook/nailgun) is compiled and used so that ENSIME runs as a background server with millisecond response times. This only requires `cc` to be available.
+[`nailgun`](https://github.com/facebook/nailgun) is compiled and used so that ENSIME runs as a background server with millisecond response times. Note that we rename the binary so that it does not conflict with the popular nodejs angular framework's `ng` command.
 
 ```
 wget https://raw.githubusercontent.com/facebook/nailgun/main/nailgun-client/c/ng.c
-cc -O2 ng.c -o ng
-sudo install ng /usr/local/bin/
-rm -f ng.c ng
+sed -i 's/"ng"/"nailgun"/' ng.c
+cc -O2 ng.c -o nailgun
+sudo install nailgun /usr/local/bin/
+rm -f ng.c nailgun
 ```
 
 ### Local Source Lookup

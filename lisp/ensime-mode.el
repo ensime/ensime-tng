@@ -298,12 +298,13 @@ May ask the user to disambiguate."
         (buf "*ENSIME*"))
     (ignore-errors (kill-buffer buf))
 
-    (unless (executable-find "ng")
+    (unless (executable-find "nailgun")
       (with-current-buffer (get-buffer-create buf)
         (insert "  wget https://raw.githubusercontent.com/facebook/nailgun/main/nailgun-client/c/ng.c\n")
-        (insert "  cc -O2 ng.c -o ng\n")
-        (insert "  sudo install ng /usr/local/bin/\n")
-        (insert "  rm -f ng.c ng\n\n")))
+        (insert "  sed -i 's/\"ng\"/\"nailgun\"/' ng.c\n")
+        (insert "  cc -O2 ng.c -o nailgun\n")
+        (insert "  sudo install nailgun /usr/local/bin/\n")
+        (insert "  rm -f ng.c nailgun\n\n")))
 
     (unless (file-directory-p lib)
       (with-current-buffer (get-buffer-create buf)

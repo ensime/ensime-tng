@@ -53,7 +53,7 @@ object EnsimeLsp {
           "Welcome to ENSIME! Reload your build tool after installing the compiler plugin, and compile at least once."
         )
       )
-    } else if (sys.env("PATH").split(File.pathSeparator).toList.find(d => new File(d, "ng").isFile).isEmpty) {
+    } else if (sys.env("PATH").split(File.pathSeparator).toList.find(d => new File(d, "nailgun").isFile).isEmpty) {
       client.showMessage(
         new MessageParams(
           MessageType.Info,
