@@ -91,12 +91,9 @@ class Plugin extends StandardPlugin {
         }
       }
 
-      super.runOn(units)
+      super.run On(units)
     }
 
-    // pre-typer plugins are apparently not allowed in releases, just research
-    // plugions, but they apparently forgot to disable it :-D
-    // https://github.com/lampepfl/dotty/pull/13173
     override val runsAfter: Set[String] = Set(Parser.name)
     override val runsBefore: Set[String] = Set(TyperPhase.name)
   }
