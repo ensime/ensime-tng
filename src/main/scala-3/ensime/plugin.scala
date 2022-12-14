@@ -91,7 +91,7 @@ class Plugin extends StandardPlugin {
         }
       }
 
-      super.run On(units)
+      super.runOn(units)
     }
 
     override val runsAfter: Set[String] = Set(Parser.name)
