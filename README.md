@@ -12,8 +12,7 @@ The feature set is constrained to allow the codebase to be lean and maintainable
 - infer type
 - import / search for class
 - jump to source
-
-with diagnostics only working in Scala 2. Help out with [DOTTY-329](https://github.com/lampepfl/dotty-feature-requests/issues/329) to unblock diagnostics in Scala 3.
+- diagnostics (red squigglies)
 
 # Installation
 

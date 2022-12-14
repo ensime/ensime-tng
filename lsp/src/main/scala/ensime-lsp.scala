@@ -3,7 +3,7 @@ package ensime
 import java.io.File
 import java.lang.management.ManagementFactory
 import java.net.URI
-import java.nio.file.{ FileSystem, FileSystems, Files, Path, StandardWatchEventKinds, WatchEvent, WatchService }
+import java.nio.file.{ FileSystems, Files, Path, StandardWatchEventKinds, WatchService }
 import java.nio.file.StandardCopyOption.REPLACE_EXISTING
 import java.nio.file.StandardOpenOption.{ CREATE, TRUNCATE_EXISTING }
 import java.util.{ List => JList, Timer, TimerTask }
@@ -14,12 +14,10 @@ import scala.concurrent.Future
 import scala.jdk.CollectionConverters._
 import scala.jdk.FutureConverters._
 import scala.sys.process._
-import scala.util.control.{ NoStackTrace, NonFatal }
+import scala.util.control.NonFatal
 
 import org.eclipse.lsp4j._
-import org.eclipse.lsp4j.jsonrpc.Launcher
 import org.eclipse.lsp4j.jsonrpc.messages.{ Either => LspEither }
-import org.eclipse.lsp4j.jsonrpc.services._
 import org.eclipse.lsp4j.launch.LSPLauncher
 import org.eclipse.lsp4j.services._
 
@@ -296,8 +294,8 @@ class EnsimeLsp extends LanguageServer with LanguageClientAware {
           key.pollEvents().asScala.foreach { e =>
             e.context() match {
               case p: Path =>
+                System.err.println(s"detected changes to $file")
                 if (p.toString == "diagnostics.log") {
-                  System.err.println(s"detected changes to $file")
                   try diagnosticsCallback(file, hash)
                   catch {
                     case NonFatal(e) =>
@@ -361,12 +359,6 @@ class EnsimeLsp extends LanguageServer with LanguageClientAware {
     }
   }
 
-  @volatile private var subscriptions: Set[File] = Set()
-  private def diagnosticsFile(f: File): Option[File] = launcher(f).map { ef =>
-    val hash = launcherHash(ef)
-    new File(tmp_prefix, hash + "/diagnostics.log")
-  }
-
   override def getTextDocumentService(): TextDocumentService = new TextDocumentService {
     // we only care about monitoring the active set
     override def didClose(p: DidCloseTextDocumentParams): Unit = {
@@ -399,6 +391,7 @@ class EnsimeLsp extends LanguageServer with LanguageClientAware {
             df.toPath.getParent.register(watcher, ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY)
 
             watchers += ((df, hash) -> watcher)
+            diagnosticsCallback(df, hash) // renders existing diagnostics
           }
         }
       }

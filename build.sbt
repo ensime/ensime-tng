@@ -74,7 +74,7 @@ val lsp = project
     crossPaths := false, // https://github.com/sbt/junit-interface/issues/35
     testOptions += Tests.Argument(TestFrameworks.JUnit, "-v"),
 
-    scalacOptions += "-deprecation",
+    scalacOptions ++= List("-deprecation", "-Xlint:unused"),
 
     // https://github.com/eclipse/lsp4j/issues/127#issuecomment-343781551
     scalacOptions += "-Xmixin-force-forwarders:false",

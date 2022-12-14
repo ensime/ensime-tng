@@ -2,35 +2,33 @@
 // License: GPLv3+
 package ensime
 
+import java.io.File
+import java.nio.file.Files
+import java.nio.file.StandardOpenOption.{ APPEND, CREATE, TRUNCATE_EXISTING }
+
+import scala.util.control.NonFatal
+
 import dotty.tools.dotc.CompilationUnit
 import dotty.tools.dotc.ast.Trees._
 import dotty.tools.dotc.config.ScalaSettings
 import dotty.tools.dotc.config.Settings.Setting
 import dotty.tools.dotc.core.Mode
 import dotty.tools.dotc.core.Contexts.Context
+import dotty.tools.dotc.interfaces.Diagnostic.{ ERROR, INFO, WARNING }
 import dotty.tools.dotc.parsing.Parser
 import dotty.tools.dotc.plugins.{ PluginPhase, StandardPlugin }
 import dotty.tools.dotc.reporting.*
 import dotty.tools.dotc.typer.TyperPhase
-import dotty.tools.io.AbstractFile
-import dotty.tools.dotc.interfaces.Diagnostic.{ERROR, INFO, WARNING}
 import dotty.tools.dotc.util.SourcePosition
-
- 
- import scala.util.control.NonFatal
-
-
-import java.io.File
-import java.nio.file.Files
-import java.nio.file.StandardOpenOption.{ APPEND, CREATE, TRUNCATE_EXISTING }
+import dotty.tools.io.AbstractFile
 
 class ReporterHack(
   val underlying: Reporter,
   val out: File
 ) extends Reporter  {
- 
+
   resetThis()
-  
+
   override def flush()(using ctx: Context): Unit = underlying.flush()
 
   override def doReport(diagnostic: Diagnostic)(using ctx: Context): Unit = {
@@ -46,7 +44,8 @@ class ReporterHack(
           case WARNING => "WARNING"
           case INFO => "INFO"
         }
-        Files.writeString(out.toPath(), s"$severity\n$file\n${pos.startLine}\n${pos.startColumn}\n${pos.endLine}\n${pos.endColumn}\n${diagnostic.msg}\n\u0000", APPEND, CREATE)
+
+        Files.writeString(out.toPath(), s"$severity\n$file\n${pos.startLine + 1}\n${pos.startColumn + 1}\n${pos.endLine + 1}\n${pos.endColumn + 1}\n${diagnostic.msg}\n\u0000", APPEND, CREATE)
       }
     }
   }
@@ -82,7 +81,7 @@ class Plugin extends StandardPlugin {
 
         val target = ctx.settings.outputDir.value.file
         val (launcher, tmpdir) = Launcher.mkScript(ctx.settings.userSetSettings(ctx.settingsState).toList.flatMap(_.unparse))
-        
+
         ctx.typerState.setReporter(new ReporterHack(ctx.reporter, new File(tmpdir, "diagnostics.log")))
         units.foreach { unit =>
           val file = unit.source.file.file
