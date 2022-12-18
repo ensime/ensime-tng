@@ -354,7 +354,7 @@ class EnsimeLsp extends LanguageServer with LanguageClientAware {
       val diagnostics = ds.map(_._2).asJava
       System.err.println(s"publishing ${diagnostics.size} diagnostics for $file")
       client.publishDiagnostics(
-        new PublishDiagnosticsParams(file.toString, diagnostics)
+        new PublishDiagnosticsParams(file.toPath().toUri().toString, diagnostics)
       )
     }
   }
