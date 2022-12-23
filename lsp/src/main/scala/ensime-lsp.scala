@@ -446,8 +446,9 @@ class EnsimeLsp extends LanguageServer with LanguageClientAware {
 
     override def hover(params: HoverParams): CompletableFuture[Hover] = async {
       val f = uriToFile_(params.getTextDocument.getUri)
-      val output = ensime("type", f, params.getPosition)
-      val content = new MarkupContent("plaintext", output)
+      val output = ensime("type", f, params.getPosition).trim()
+      val markdownOutput = s"```scala\n$output\n```"
+      val content = new MarkupContent("markdown", markdownOutput)
       new Hover(content)
     }
 
