@@ -17,7 +17,7 @@ simple.Main
 simple.Main
 =========
 > src/main/scala/simple.scala symbol src/main/scala/simple.scala 302
-simple.Main.wibble
+scala.annotation.tailrec
 =========
 > src/main/scala/simple.scala symbol src/main/scala/simple.scala 388
 scala.Array
