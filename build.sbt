@@ -40,6 +40,9 @@ lazy val ensime = (project in file(".")).settings(
   },
 
   libraryDependencies ++= Seq(
+    // NOTE we are monkey patching NGServer.java from
+    // https://github.com/facebook/nailgun/pull/204
+    // to support Java 19+
     "com.facebook" % "nailgun-server" % "1.0.1",
     "org.ow2.asm"  % "asm"            % "9.4"
   ),
@@ -47,9 +50,11 @@ lazy val ensime = (project in file(".")).settings(
   crossTarget := target.value / s"scala-${scalaVersion.value}",
 
   // tests expect the jar here
+  assembly / mainClass := Some("ensime.Main"),
   assembly / assemblyJarName := "ensime.jar",
   assemblyMergeStrategy := {
     case "rootdoc.txt" => MergeStrategy.discard
+    case x if x.startsWith("com/facebook/nailgun/NGServer") => MergeStrategy.first // monkey patch
     case x => assemblyMergeStrategy.value(x)
   },
 
@@ -83,6 +88,7 @@ val lsp = project
     assembly / assemblyJarName := "ensime-lsp.jar",
     assemblyMergeStrategy := {
       case "rootdoc.txt" => MergeStrategy.discard
+      case x if x.startsWith("com/facebook/nailgun/NGServer") => MergeStrategy.first // monkey patch
       case x => assemblyMergeStrategy.value(x)
     },
 
