@@ -1,7 +1,5 @@
 package ensime
 
-import java.io.Reader
-
 import scala.util.control.NoStackTrace
 
 case class Sig(name: String, paramss: List[List[String]]) {
