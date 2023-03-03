@@ -88,7 +88,6 @@ val lsp = project
     assembly / assemblyJarName := "ensime-lsp.jar",
     assemblyMergeStrategy := {
       case "rootdoc.txt" => MergeStrategy.discard
-      case x if x.startsWith("com/facebook/nailgun/NGServer") => MergeStrategy.first // monkey patch
       case x => assemblyMergeStrategy.value(x)
     },
 
