@@ -6,7 +6,7 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd "$SCRIPT_DIR"
 
 # intentionally using 2.12.x to test the sbt logic
-SCALA_VERSIONS="${SCALA_VERSIONS:-3.2.2 2.13.10 2.12.17 2.11.12}"
+SCALA_VERSIONS="${SCALA_VERSIONS:-3.2.2 2.13.11 2.12.17 2.11.12}"
 
 JAVA_HOME=$(java -XshowSettings:properties -version 2>&1 >/dev/null | grep 'java.home' | sed 's/.* = //')
 
