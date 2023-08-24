@@ -13,7 +13,7 @@ ThisBuild / crossScalaVersions := List(
   "2.12.17", // the version of scala used by sbt 1.8.2
   "2.12.18",
   "2.11.12",
-  "3.2.2"
+  "3.3.0"
 )
 ThisBuild / scalaVersion := (ThisBuild / crossScalaVersions).value.head
 
