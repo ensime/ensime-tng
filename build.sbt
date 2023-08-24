@@ -2,6 +2,10 @@ organization := "com.fommil"
 
 licenses := List(License.GPL3_or_later)
 
+// allows compiling against scala snapshots
+// https://stackoverflow.com/questions/40622878/how-do-i-use-a-nightly-build-of-scala
+Global / resolvers += "scala-integration" at "https://scala-ci.typesafe.com/artifactory/scala-integration/"
+
 ThisBuild / crossScalaVersions := List(
   "2.13.11",
   "2.12.15", // the version of scala used by sbt 1.6.2
