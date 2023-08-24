@@ -5,8 +5,9 @@ set -eo pipefail
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd "$SCRIPT_DIR"
 
-# intentionally using 2.12.x to test the sbt logic
-SCALA_VERSIONS="${SCALA_VERSIONS:-3.3.0 2.13.11 2.12.17 2.11.12}"
+# note the version of scal that matches the sbt version will have slightly different
+# jar resolution results due to the way sbt stores the files (intentionally tested)
+SCALA_VERSIONS="${SCALA_VERSIONS:-3.3.0 2.13.11 2.12.18 2.11.12}"
 
 JAVA_HOME=$(java -XshowSettings:properties -version 2>&1 >/dev/null | grep 'java.home' | sed 's/.* = //')
 
