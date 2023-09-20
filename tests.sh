@@ -7,7 +7,7 @@ cd "$SCRIPT_DIR"
 
 # note the version of scal that matches the sbt version will have slightly different
 # jar resolution results due to the way sbt stores the files (intentionally tested)
-SCALA_VERSIONS="${SCALA_VERSIONS:-3.3.0 2.13.12 2.12.18 2.11.12}"
+SCALA_VERSIONS="${SCALA_VERSIONS:-3.3.1 2.13.12 2.12.18 2.11.12}"
 
 JAVA_HOME=$(java -XshowSettings:properties -version 2>&1 >/dev/null | grep 'java.home' | sed 's/.* = //')
 
