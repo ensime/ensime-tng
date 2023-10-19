@@ -15,7 +15,8 @@ object Launcher {
   val cacheDir = sys.props("user.home") + "/.cache/ensime/"
 
   def mkScript(userSettings: List[String]): (String, File) = {
-    val ensimeJar = userSettings.find(_.matches(s"^-Xplugin:.*${pluginName}.*[.]jar$$")).head.stripPrefix("-Xplugin:")
+    val userSettings_ = userSettings.map(_.trim).filterNot(_.isBlank)
+    val ensimeJar = userSettings_.find(_.matches(s"^-Xplugin:.*${pluginName}.*[.]jar$$")).head.stripPrefix("-Xplugin:")
 
     val userName = sys.props("user.name")
     val userDir = sys.props("user.dir")
@@ -34,7 +35,7 @@ object Launcher {
       "__TMPDIR__" -> tmpdir,
       "__JAVA__" -> (userJava :: javaFlags).mkString(" "),
       "__ENSIME_JAR__" -> ensimeJar,
-      "__USER_SETTINGS__" -> userSettings.map(s => "\"" + s + "\"").mkString(" ")
+      "__USER_SETTINGS__" -> userSettings_.map(s => "\"" + s + "\"").mkString(" ")
     )
 
     // the hash should be common to all source files that require the same compiler parameters
