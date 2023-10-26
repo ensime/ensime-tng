@@ -49,7 +49,7 @@ lazy val ensime = (project in file(".")).settings(
     // https://github.com/facebook/nailgun/pull/204
     // to support Java 19+
     "com.facebook" % "nailgun-server" % "1.0.1",
-    "org.ow2.asm"  % "asm"            % "9.4"
+    "org.ow2.asm"  % "asm"            % "9.6"
   ),
 
   crossTarget := target.value / s"scala-${scalaVersion.value}",
