@@ -14,16 +14,19 @@ import mill.scalalib._
 
 trait EnsimeModule extends ScalaModule { module =>
 
-  def ensimeJar : T[Option[PathRef]] = T.input {
+  def ensimeWanted = T.input {
+    os.exists(os.home / ".cache" / "ensime")
+  }
+
+  def ensimeJar : T[Option[PathRef]] = T {
     val jar = os.home / ".cache" / "ensime" / "lib" / s"""ensime-${scalaVersion()}.jar"""
-    val ensimeWanted = os.exists(os.home / ".cache" / "ensime")
-    if (os.isFile(jar) && ensimeWanted) {
+    if (os.isFile(jar) && ensimeWanted()) {
       // make sure the user always has sources if ENSIME is enabled
       val fetchTask = fetchDepSources()
       fetchTask()
       Some(PathRef(jar))
     } else {
-      if (ensimeWanted){
+      if (ensimeWanted()){
         T.ctx.log.error(s"ENSIME not found. Try\n\n      sbt ++${scalaVersion()}! install\n\nin the ensime-tng repo.")
       }
       None
