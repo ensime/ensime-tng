@@ -27,7 +27,7 @@ trait EnsimeModule extends ScalaModule { module =>
       Some(PathRef(jar))
     } else {
       if (ensimeWanted()){
-        T.ctx.log.error(s"ENSIME not found. Try\n\n      sbt ++${scalaVersion()}! install\n\nin the ensime-tng repo.")
+        T.ctx().log.error(s"ENSIME not found. Try\n\n      sbt ++${scalaVersion()}! install\n\nin the ensime-tng repo.")
       }
       None
     }
@@ -47,9 +47,11 @@ trait EnsimeModule extends ScalaModule { module =>
 
     val repos = module.repositoriesTask()
     val allIvyDeps = module.transitiveIvyDeps() ++ module.transitiveCompileIvyDeps()
-    val coursierDeps = allIvyDeps.map(module.resolveCoursierDependency()).toList
     val withSources = Resolution(
-      coursierDeps
+      // for mill 0.10.x use...
+      // allIvyDeps.map(module.resolveCoursierDependency())
+      allIvyDeps.map(_.dep)
+        .toList
         .map(d =>
           d.withAttributes(
             d.attributes.withClassifier(coursier.Classifier("sources"))
