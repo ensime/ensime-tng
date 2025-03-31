@@ -7,13 +7,16 @@ licenses := List(License.GPL3_or_later)
 Global / resolvers += "scala-integration" at "https://scala-ci.typesafe.com/artifactory/scala-integration/"
 
 ThisBuild / crossScalaVersions := List(
-  "2.13.12",
-  "2.12.15", // the version of scala used by sbt 1.6.2
-  "2.12.16", // the version of scala used by sbt 1.7.2
-  "2.12.17", // the version of scala used by sbt 1.8.2
-  "2.12.18", // the version of scala used by sbt 1.9.4
-  "2.11.12",
-  "3.3.1"
+  "2.13.16",
+//  "2.13.15",
+//  "2.13.12",
+  "2.12.15", // the version of scala used by sbt 1.6.2, and spark 14.3lts
+//  "2.12.16", // the version of scala used by sbt 1.7.2
+//  "2.12.17", // the version of scala used by sbt 1.8.2
+//  "2.12.18", // the version of scala used by sbt 1.9.4
+  "2.12.20", // the version of scala used by sbt 1.11.4
+//  "2.11.12",
+//  "3.3.3" // nobody cares about scala 3
 )
 ThisBuild / scalaVersion := (ThisBuild / crossScalaVersions).value.head
 
