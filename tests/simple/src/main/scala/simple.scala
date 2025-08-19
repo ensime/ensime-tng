@@ -10,7 +10,7 @@ object Main {
     val _ = Foo.foo
 
     java.util.regex.Pattern.compile("foo"): Unit
-    java.nio.file.Files.notExists(java.nio.file.Path.of("/")): Unit
+    java.nio.file.Files.notExists(java.nio.file.Paths.get("/")): Unit
   }
 
   @scala.annotation.tailrec

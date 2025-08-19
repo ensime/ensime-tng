@@ -3,7 +3,8 @@
 package ensime
 
 import java.io.File
-import java.nio.file.{ Files, Path }
+import java.nio.charset.StandardCharsets
+import java.nio.file.{ Files, OpenOption, Path, Paths }
 import java.nio.file.StandardOpenOption.{ APPEND, CREATE, TRUNCATE_EXISTING }
 import java.util.UUID
 
@@ -15,7 +16,7 @@ object Launcher {
   val cacheDir = sys.props("user.home") + "/.cache/ensime/"
 
   def mkScript(userSettings: List[String]): (String, File) = {
-    val userSettings_ = userSettings.map(_.trim).filterNot(_.isBlank)
+    val userSettings_ = userSettings.map(_.trim).filterNot(_.isEmpty)
     val ensimeJar = userSettings_.find(_.matches(s"^-Xplugin:.*${pluginName}.*[.]jar$$")).head.stripPrefix("-Xplugin:")
 
     val userName = sys.props("user.name")
@@ -24,7 +25,10 @@ object Launcher {
 
     // release as much memory back to the OS as possible to keep our overhead low
     // https://stackoverflow.com/questions/30458195
-    val javaFlags = List("-Xms100m", "-XX:-ShrinkHeapInSteps", "-XX:MinHeapFreeRatio=20", "-XX:MaxHeapFreeRatio=40")
+    val javaVersion = sys.props("java.version").split("[._]")(0).toInt
+    val javaFlags =
+      if (javaVersion >= 11) List("-Xms100m", "-XX:-ShrinkHeapInSteps", "-XX:MinHeapFreeRatio=20", "-XX:MaxHeapFreeRatio=40")
+      else List("-Xms100m", "-XX:MinHeapFreeRatio=20", "-XX:MaxHeapFreeRatio=40")
 
     // could capture envvars behind an allow-list
     var templ = getResourceAsString("ensime/launcher.sh")
@@ -47,14 +51,20 @@ object Launcher {
     (templ, new File(tmpdir, hash))
   }
 
+  private def readString(p: Path): String =
+    new String(Files.readAllBytes(p), StandardCharsets.UTF_8)
+
+  private def writeString(p: Path, s: String, opts: OpenOption*): Unit =
+    Files.write(p, s.getBytes(StandardCharsets.UTF_8), opts: _*)
+
   // writes the ensime file for the given source file and appends a reverse
   // lookup onto the output directory. Only writes the file if it changed.
   def write(file: File, target: File, launcher: String): Unit = {
     val src = file.getAbsolutePath()
-    val exe = Path.of(cacheDir + src)
-    if (Files.notExists(exe) || Files.readString(exe) != launcher) {
+    val exe = Paths.get(cacheDir + src)
+    if (Files.notExists(exe) || readString(exe) != launcher) {
       Files.createDirectories(exe.getParent)
-      Files.writeString(exe, launcher, CREATE, TRUNCATE_EXISTING)
+      writeString(exe, launcher, CREATE, TRUNCATE_EXISTING)
       exe.toFile.setExecutable(true)
     }
 
@@ -65,14 +75,14 @@ object Launcher {
     //
     // There is no way to workaround this except for the user to purge the
     // entries, which can be managed by the build tool on a "clean" task.
-    val lookup = Path.of(cacheDir + target.getAbsolutePath())
+    val lookup = Paths.get(cacheDir + target.getAbsolutePath())
     if (Files.notExists(lookup)) {
       Files.createDirectories(lookup.getParent)
-      Files.writeString(lookup, "", CREATE)
+      writeString(lookup, "", CREATE)
     }
     val srcs = Files.readAllLines(lookup)
     if (!srcs.contains(src))
-      Files.writeString(lookup, src + "\n", APPEND)
+      writeString(lookup, src + "\n", APPEND)
   }
 
   private def getResourceAsString(res: String): String = {

@@ -4,7 +4,8 @@ package ensime
 
 import java.io.{ File, PrintStream }
 import java.net.URI
-import java.nio.file.{ Files, Path }
+import java.nio.charset.StandardCharsets
+import java.nio.file.{ Files, Path, Paths }
 import java.util.concurrent.atomic.AtomicReference
 
 import dotty.tools.dotc.ast.{ Positioned, tpd }
@@ -33,7 +34,7 @@ class Compiler(driver: InteractiveDriver)(implicit ctx: Context) {
   // e.g. RefinedPrinter#fullNameString
 
   private def symbolAt_(pos: SourcePosition): Option[Symbol] = {
-    val uri = Path.of(pos.source.file.path).toUri
+    val uri = Paths.get(pos.source.file.path).toUri
     val path = Interactive.pathTo(driver.openedTrees(uri), pos)
 
     // should really dialias types here
@@ -222,6 +223,9 @@ object Compiler {
     resolver.result.asURLs.map(_.toURI).toList
   }
 
+  private def readString(p: Path): String =
+    new String(Files.readAllBytes(p), StandardCharsets.UTF_8)
+
   // a cache of the last successful compiler that has the given context loaded.
   private val cached: AtomicReference[Option[(String, List[(Long, File)], InteractiveDriver)]] = new AtomicReference(None)
   def withCompiler[A](settings: List[String], target: String, others: List[String])(f: (SourceFile, Compiler) => A): A = {
@@ -243,10 +247,10 @@ object Compiler {
     }
 
     val sources = (target :: deps).map { s =>
-      val p = Path.of(s).toAbsolutePath
+      val p = Paths.get(s).toAbsolutePath
       p.toUri -> new SourceFile(
         new VirtualFile(p.toString),
-        Files.readString(p).toCharArray
+        readString(p).toCharArray
       )
     }
 

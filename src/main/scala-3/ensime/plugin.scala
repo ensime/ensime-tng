@@ -3,7 +3,8 @@
 package ensime
 
 import java.io.File
-import java.nio.file.Files
+import java.nio.charset.StandardCharsets
+import java.nio.file.{ Files, OpenOption, Path }
 import java.nio.file.StandardOpenOption.{ APPEND, CREATE, TRUNCATE_EXISTING }
 
 import scala.util.control.NonFatal
@@ -29,6 +30,9 @@ class ReporterHack(
 
   resetThis()
 
+  private def writeString(p: Path, s: String, opts: OpenOption*): Unit =
+    Files.write(p, s.getBytes(StandardCharsets.UTF_8), opts: _*)
+
   override def flush()(using ctx: Context): Unit = underlying.flush()
 
   override def doReport(diagnostic: Diagnostic)(using ctx: Context): Unit = {
@@ -45,13 +49,13 @@ class ReporterHack(
           case INFO => "INFO"
         }
 
-        Files.writeString(out.toPath(), s"$severity\n$file\n${pos.startLine + 1}\n${pos.startColumn + 1}\n${pos.endLine + 1}\n${pos.endColumn + 1}\n${diagnostic.msg}\n\u0000", APPEND, CREATE)
+        writeString(out.toPath(), s"$severity\n$file\n${pos.startLine + 1}\n${pos.startColumn + 1}\n${pos.endLine + 1}\n${pos.endColumn + 1}\n${diagnostic.msg}\n\u0000", APPEND, CREATE)
       }
     }
   }
 
   def resetThis(): Unit = withDiagnosticsFile {
-    Files.writeString(out.toPath, "", CREATE, TRUNCATE_EXISTING)
+    writeString(out.toPath, "", CREATE, TRUNCATE_EXISTING)
   }
 
   private def withDiagnosticsFile(f: => Unit): Unit = Launcher.synchronized {

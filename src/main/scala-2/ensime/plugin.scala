@@ -3,7 +3,8 @@
 package ensime
 
 import java.io.File
-import java.nio.file.Files
+import java.nio.charset.StandardCharsets
+import java.nio.file.{ Files, OpenOption, Path }
 import java.nio.file.StandardOpenOption.{ APPEND, CREATE, TRUNCATE_EXISTING }
 
 import scala.reflect.internal.util.Position
@@ -15,6 +16,10 @@ class ReporterHack(
   val underlying: Reporter,
   val out: File
 ) extends Reporter {
+
+  private def writeString(p: Path, s: String, opts: OpenOption*): Unit =
+    Files.write(p, s.getBytes(StandardCharsets.UTF_8), opts: _*)
+
   // scala 2.13 introduces a doReport that is nicer to use, but this is the only
   // way to do it that works for all 2.x
   override def info0(pos: Position, msg: String, severity: Severity, force: Boolean): Unit = {
@@ -29,7 +34,7 @@ class ReporterHack(
         // NULL character used as separator
         val start = pos.focusStart
         val end = pos.focusEnd
-        Files.writeString(out.toPath(), s"$severity\n$file\n${start.line}\n${start.column}\n${end.line}\n${end.column}\n$msg\n\u0000", APPEND, CREATE)
+        writeString(out.toPath(), s"$severity\n$file\n${start.line}\n${start.column}\n${end.line}\n${end.column}\n$msg\n\u0000", APPEND, CREATE)
       }
     }
   }
@@ -42,7 +47,7 @@ class ReporterHack(
   override def flush(): Unit = underlying.flush()
 
   def resetThis(): Unit = withDiagnosticsFile {
-    Files.writeString(out.toPath, "", CREATE, TRUNCATE_EXISTING)
+    writeString(out.toPath, "", CREATE, TRUNCATE_EXISTING)
   }
 
   private def withDiagnosticsFile(f: => Unit): Unit = Launcher.synchronized {

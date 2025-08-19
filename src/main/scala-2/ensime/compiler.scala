@@ -4,7 +4,8 @@ package ensime
 
 import java.io.{ File, PrintStream }
 import java.net.URI
-import java.nio.file.{ Files, Path }
+import java.nio.charset.StandardCharsets
+import java.nio.file.{ Files, Path, Paths }
 import java.util.concurrent.atomic.AtomicReference
 
 import scala.annotation._
@@ -190,6 +191,9 @@ object Compiler {
     case other => throw new IllegalArgumentException(s"not a valid position '$other'")
   }
 
+  private def readString(p: Path): String =
+    new String(Files.readAllBytes(p), StandardCharsets.UTF_8)
+
   // a cache of the last successful compiler that has the given ctx loaded.
   private val cached: AtomicReference[Option[(String, List[(Long, File)], Compiler)]] = new AtomicReference(None)
   def withCompiler[A](settings: Settings, target: String, ctx: List[String])(f: (SourceFile, Compiler) => A): A = {
@@ -210,10 +214,10 @@ object Compiler {
     }
 
     val target_ :: deps_ = (target :: deps).map { s =>
-      val p = Path.of(s).toAbsolutePath
+      val p = Paths.get(s).toAbsolutePath
       new BatchSourceFile(
         new VirtualFile(p.toString),
-        Files.readString(p).toCharArray
+        readString(p).toCharArray
       )
     }
 

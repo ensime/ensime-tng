@@ -190,19 +190,23 @@ object Main {
 
     bin.container match {
       case Left(parent) =>
-        val lookup = Files.readAllLines(Path.of(Launcher.cacheDir + parent.toString))
-        find(lookup.stream.map(Path.of(_)))
-          .map(e => LocalFile(Left(Path.of("/")), e))
+        val lookup = Files.readAllLines(Paths.get(Launcher.cacheDir + parent.toString))
+        find(lookup.stream.map(Paths.get(_)))
+          .map(e => LocalFile(Left(Paths.get("/")), e))
 
       case Right(container) => {
         container.getScheme match {
           case "file" =>
             val jar = new File(container)
-            // there is no standard convention for the location of the sources
-            // jar or zip file, so we apply heuristics. This also requires the
-            // user to have downloaded the sources in the first place.
-            sbtBootHack(jar).orElse {
-              Some(new File(jar.getParent, jar.getName.replaceAll("[.]jar$", "-sources.jar")))
+            if (jar.getName == "rt.jar") {
+              List("lib/src.zip", "../src.zip", "src.zip").map(new File(sys.props("java.home"), _)).find(_.isFile())
+            } else {
+              // there is no standard convention for the location of the sources
+              // jar or zip file, so we apply heuristics. This also requires the
+              // user to have downloaded the sources in the first place.
+              sbtBootHack(jar).orElse {
+                Some(new File(jar.getParent, jar.getName.replaceAll("[.]jar$", "-sources.jar")))
+              }
             }
           case "jrt" =>
             Some(new File(sys.props("java.home"), "/lib/src.zip"))
