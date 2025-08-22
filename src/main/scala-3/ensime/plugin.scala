@@ -101,7 +101,7 @@ class Plugin extends StandardPlugin {
     override val runsBefore: Set[String] = Set(TyperPhase.name)
   }
 
-  def init(options: List[String]): List[PluginPhase] = phase :: Nil
+  override def init(options: List[String]): List[PluginPhase] = phase :: Nil
 }
 
 object Plugin {

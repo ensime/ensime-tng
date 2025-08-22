@@ -13,13 +13,14 @@ import dotty.tools.dotc.config.{ Feature, PathResolver }
 import dotty.tools.dotc.core.{ MacroClassLoader, Mode, Symbols, TypeErasure }
 import dotty.tools.dotc.core.Contexts.{ Context, ContextBase, FreshContext }
 import dotty.tools.dotc.core.Flags._
-import dotty.tools.dotc.core.Symbols.Symbol
+import dotty.tools.dotc.core.Symbols._
 import dotty.tools.dotc.core.Types.Type
 import dotty.tools.dotc.interactive.{ Completion, Interactive, InteractiveCompiler, InteractiveDriver, SourceTree }
 import dotty.tools.dotc.interfaces.{ Diagnostic, SimpleReporter }
 import dotty.tools.dotc.reporting.Reporter
-import dotty.tools.dotc.transform.SymUtils._
-import dotty.tools.dotc.transform.TypeUtils._
+// uncomment this before 3.3.4
+// import dotty.tools.dotc.transform.SymUtils._
+// import dotty.tools.dotc.transform.TypeUtils._
 import dotty.tools.dotc.typer.ImportInfo
 import dotty.tools.dotc.util.{ SourceFile, SourcePosition, Spans }
 import dotty.tools.io.{ AbstractFile, VirtualFile }

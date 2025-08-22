@@ -16,7 +16,11 @@ ThisBuild / crossScalaVersions := List(
 //  "2.12.18", // the version of scala used by sbt 1.9.4
   "2.12.20", // the version of scala used by sbt 1.11.4
 //  "2.11.12",
-//  "3.3.3" // nobody cares about scala 3
+// Scala 3 is disabled by default because I don't use it, but it should work. If
+// you need a version prior to 3.3.5 then you'll need to make some trivial code
+// changes in the file that fails to compile (they are commented).
+//  "3.3.6",
+//  "3.7.2",
 )
 ThisBuild / scalaVersion := (ThisBuild / crossScalaVersions).value.head
 
